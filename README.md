@@ -4,3 +4,4 @@
 
 - ikura-hamu
 - kaomojikun
+- kitsne
