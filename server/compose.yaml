@@ -1,0 +1,103 @@
+# Comments are provided throughout this file to help you get started.
+# If you need more help, visit the Docker Compose reference guide at
+# https://docs.docker.com/go/compose-spec-reference/
+
+# Here the instructions define your application as a service called "server".
+# This service is built from the Dockerfile in the current directory.
+# You can add other services your application may depend on here, such as a
+# database or a cache. For examples, see the Awesome Compose repository:
+# https://github.com/docker/awesome-compose
+services:
+  server:
+    image: cosmtrek/air:latest
+    working_dir: /app
+    volumes:
+      - .:/app
+    ports:
+      - 8080:8080
+    env_file:
+      - .env
+
+    # The commented out section below is an example of how to define a PostgreSQL
+    # database that your application can use. `depends_on` tells Docker Compose to
+    # start the database before your application. The `db-data` volume persists the
+    # database data between container restarts. The `db-password` secret is used
+    # to set the database password. You must create `db/password.txt` and add
+    # a password of your choosing to it before running `docker compose up`.
+    depends_on:
+      db:
+        condition: service_healthy
+      s3:
+        condition: service_healthy
+
+  db:
+    image: mariadb:10
+    restart: always
+    # secrets:
+    #   - db-password
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./sql:/docker-entrypoint-initdb.d
+    environment:
+      - MARIADB_DATABASE=h26s_02
+      - MARIADB_ROOT_PASSWORD=password
+    expose:
+      - 3306
+    ports:
+      - 127.0.0.1:3306:3306
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  adminer:
+    image: adminer:5
+    restart: always
+    ports:
+      - 8081:8080
+    depends_on:
+      - db
+
+  s3:
+    image: rustfs/rustfs:latest
+    restart: always
+    environment:
+      RUSTFS_CONSOLE_ENABLE: "true"
+      RUSTFS_ACCESS_KEY: rustfsadmin
+      RUSTFS_SECRET_KEY: rustfsadmin
+      RUSTFS_VOLUMES: /data/rustfs0
+    volumes:
+      - rustfs-data:/data
+      - rustfs-logs:/logs
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    healthcheck:
+      test: ["CMD", "sh", "-c", "curl -sS http://localhost:9000/ >/dev/null"]
+      interval: 1s
+      timeout: 5s
+      retries: 20
+
+  rustfs-init: # 起動時に空のバケットを作る
+    image: amazon/aws-cli:2.31.15
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -eu
+        until aws --endpoint-url http://s3:9000 s3api list-buckets >/dev/null 2>&1; do
+          sleep 2
+        done
+        aws --endpoint-url http://s3:9000 s3api create-bucket --bucket h26s-02
+    environment:
+      AWS_ACCESS_KEY_ID: rustfsadmin
+      AWS_SECRET_ACCESS_KEY: rustfsadmin
+      AWS_REGION: us-east-1
+    depends_on:
+      s3:
+        condition: service_healthy
+
+volumes:
+  db-data:
+  rustfs-data:
+  rustfs-logs:
