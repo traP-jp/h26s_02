@@ -1,4 +1,3 @@
 <template>
-  <div>Hello!</div>
-  <button>Button</button>
+  <RouterView />
 </template>
