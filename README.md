@@ -5,3 +5,5 @@
 - ikura-hamu
 - kaomojikun
 - haruki-0920
+- hachimitsu-pichi
+- 
