@@ -5,3 +5,4 @@
 - ikura-hamu
 - kaomojikun
 - haruki-0920
+- neko_reset
