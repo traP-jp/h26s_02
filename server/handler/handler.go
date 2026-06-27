@@ -10,12 +10,14 @@ import (
 type Handler struct {
 	user *User
 	post *Post
+	tag  *Tag
 }
 
-func NewHandler(user *User, post *Post) *Handler {
+func NewHandler(user *User, post *Post, tag *Tag) *Handler {
 	return &Handler{
 		user: user,
 		post: post,
+		tag:  tag,
 	}
 }
 
@@ -25,6 +27,7 @@ func (h *Handler) Start(e *echo.Echo) {
 	api := e.Group("/api", AuthMiddleware())
 	api.GET("/users/me", h.user.GetMe)
 	api.POST("/posts", h.post.PostPost)
+	api.GET("/tags", h.tag.GetTags)
 	// api.GET("/posts", h.post.GetPosts)
 
 	log.Fatal(e.Start(":8080"))
