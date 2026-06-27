@@ -4,4 +4,5 @@ import PostGrid from '@/pages/timeline/PostGrid.vue'
 
 <template>
   <PostGrid />
+  <BottomNav />
 </template>
