@@ -75,7 +75,7 @@ const handleMotion = (event: DeviceMotionEvent) => {
     if (isStrongShake) {
       addLog(`[Motion] 強いシェイクの検知: Blur Time ${blurTime} ms`)
 
-      blurTime += diffTime * (speed / BLUR_THRESHOLD)
+      blurTime += diffTime
     }
 
     blurTime = Math.min(blurTime, 3000)

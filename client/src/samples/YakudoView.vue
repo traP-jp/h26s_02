@@ -68,6 +68,9 @@ const resetBlur = () => {
   drawCanvas()
 }
 
+const MAX_BLUR_TIME = 2000
+
+
 // テンプレート参照の型定義
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 const imageLoaded = ref<boolean>(false)
@@ -154,7 +157,7 @@ const drawCanvas = () => {
   // 【ここが重要】画面を明るくするために 'screen' を使用
   // ctx.globalCompositeOperation = 'screen'
 
-  const strength = Math.min(blurTime.value / 2000, 1)
+  const strength = Math.min(blurTime.value / MAX_BLUR_TIME / 2, 1)
   const passes = 60
   const originX: number = canvas.width * centerX.value
   const originY: number = canvas.height * centerY.value
