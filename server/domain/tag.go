@@ -9,3 +9,6 @@ func NewTag(name string) *Tag {
 		name: name,
 	}
 }
+func (t *Tag) GetName() string {
+	return t.name
+}
