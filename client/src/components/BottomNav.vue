@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import MSIcon from '@/components/MSIcon.vue'
+import SearchInput from '@/components/SearchInput.vue'
+const isSearching = ref(false)
 </script>
 
 <template>
@@ -8,16 +11,15 @@ import MSIcon from '@/components/MSIcon.vue'
       <RouterLink to="/timeline" class="button">
         <MSIcon name="home-outline" :size="24" />
       </RouterLink>
-
       <RouterLink to="/camera" class="button">
         <MSIcon name="photo-camera-outline" :size="24" />
       </RouterLink>
-      
-      <div class="button">
+      <div class="button" @click="isSearching = true">
         <MSIcon name="search" :size="24" />
       </div>
     </div>
   </div>
+  <SearchInput v-if="isSearching" @close="isSearching = false" />
 </template>
 
 <style scoped>

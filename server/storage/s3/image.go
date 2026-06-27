@@ -112,7 +112,7 @@ func (i *Image) SaveImage(ctx context.Context, name string, image io.Reader) err
 	return nil
 }
 
-func (i *Image) GetTemporalyUrl(ctx context.Context, name string) (string, error) {
+func (i *Image) GetTemporalyURL(ctx context.Context, name string) (string, error) {
 	if name == "" {
 		return "", errors.New("image name is required")
 	}
