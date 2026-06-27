@@ -14,9 +14,9 @@ type Post struct {
 
 func NewPost(userName string, id uuid.UUID, createdAt time.Time) *Post {
 	return &Post{
-		id:        uuid.New(),
+		id:        uuid.UUID{},
 		userName:  userName,
-		createdAt: time.Now(),
+		createdAt: time.Time{},
 	}
 }
 func (p *Post) GetID() uuid.UUID {
