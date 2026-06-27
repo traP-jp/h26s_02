@@ -1,38 +1,47 @@
 <template>
-  <div class="camera-container">
-    <h2>カメラ映像のテスト</h2>
+  <div class="camera-layout-wrapper">
+    <button
+      :disabled="!isCameraActive || isSwitching"
+      class="switch-button"
+      @click="switchCamera"
+    >
+      {{
+        isSwitching
+          ? '⌛️'
+          : facingMode === 'user'
+          ? '🔄'
+          : '🔄'
+      }}
+    </button>
 
-    <video
-      ref="videoRef"
-      width="640"
-      height="480"
-      autoplay
-      playsinline
-      class="camera-video"
-    ></video>
+    <div class="camera-container">
+      <h2>カメラ映像のテスト</h2>
 
-    <div class="button-area">
-      <button
-        :disabled="!isCameraActive || isSwitching"
-        class="switch-button"
-        @click="switchCamera"
-      >
-        {{
-          isSwitching
-            ? '切り替え中...'
-            : facingMode === 'user'
-              ? 'アウトカメラへ切り替え'
-              : 'インカメラへ切り替え'
-        }}
-      </button>
+      <video
+        ref="videoRef"
+        width="640"
+        height="480"
+        autoplay
+        playsinline
+        class="camera-video"
+      ></video>
 
-      <button :disabled="!isCameraActive" class="capture-button" @click="captureAndDownload">
-        キャプチャしてダウンロード
-      </button>
-    </div>
+      <div class="button-area">
+        <button 
+          :disabled="!isCameraActive || isSwitching"
+          :class="['iphone-shutter-button', { 'is-pressing': isPressing }]" 
+          @mousedown="startPress"
+          @mouseup="endPress"
+          @mouseleave="endPress"
+          @touchstart.passive="startPress"
+          @touchend.passive="endPress"
+          @click="captureAndDownload"
+        ></button>
+      </div>
 
-    <div v-if="errorMessage" class="error-message">
-      {{ errorMessage }}
+      <div v-if="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
     </div>
   </div>
 </template>
@@ -43,12 +52,24 @@ import { ref, onMounted, onBeforeUnmount } from 'vue'
 const videoRef = ref<HTMLVideoElement | null>(null)
 const errorMessage = ref<string>('')
 const isCameraActive = ref<boolean>(false)
-const isSwitching = ref<boolean>(false) // 切り替え中の状態を管理
+const isSwitching = ref<boolean>(false)
+
+// 押下状態を管理するフラグを新設
+const isPressing = ref<boolean>(false)
 
 let currentStream: MediaStream | null = null
-
-// 現在のカメラの向きを管理する状態 (初期値はインカメラ)
 const facingMode = ref<'user' | 'environment'>('user')
+
+// 押し始めたとき
+const startPress = () => {
+  if (!isCameraActive.value || isSwitching.value) return
+  isPressing.value = true
+}
+
+// 指・マウスが離れたとき
+const endPress = () => {
+  isPressing.value = false
+}
 
 const startCamera = async () => {
   console.log(`カメラの起動を試みます。向き: ${facingMode.value}`)
@@ -56,16 +77,13 @@ const startCamera = async () => {
   isCameraActive.value = false
 
   try {
-    // 既存のストリームがあれば確実に停止させる（切り替え時）
     if (currentStream) {
       console.log('既存のストリームを一度停止させます。')
       stopCamera()
     }
 
     const constraints = {
-      video: {
-        facingMode: facingMode.value, // リアクティブな状態を使用
-      },
+      video: { facingMode: facingMode.value },
       audio: false,
     }
 
@@ -109,25 +127,17 @@ const stopCamera = () => {
   }
 }
 
-// カメラを切り替える関数
 const switchCamera = async () => {
-  if (isSwitching.value) return // 切り替え中は処理をスキップ
-
+  if (isSwitching.value) return
   console.log('カメラの切り替え処理を開始します。')
-  isSwitching.value = true // 切り替え中フラグを立てる
-
-  // 1. 状態をトグルする (user <-> environment)
+  isSwitching.value = true
   facingMode.value = facingMode.value === 'user' ? 'environment' : 'user'
   console.log(`向きを ${facingMode.value} に設定しました。`)
-
-  // 2. 新しい向きでカメラを起動 (startCamera内で既存ストリームの停止も行う)
   await startCamera()
-
-  isSwitching.value = false // 切り替え中フラグを下ろす
+  isSwitching.value = false
   console.log('カメラの切り替え処理が完了しました。')
 }
 
-// キャプチャしてダウンロードする関数 (前回と同じ)
 const captureAndDownload = () => {
   console.log('キャプチャ処理を開始します。')
   const video = videoRef.value
@@ -152,7 +162,6 @@ const captureAndDownload = () => {
     console.log(`Canvasへの描画が完了しました (サイズ: ${canvas.width}x${canvas.height})。`)
 
     const dataUrl = canvas.toDataURL('image/png')
-
     const link = document.createElement('a')
     link.href = dataUrl
     const filename = `capture_${new Date().getTime()}.png`
@@ -169,31 +178,46 @@ const captureAndDownload = () => {
 }
 
 onMounted(startCamera)
-
 onBeforeUnmount(stopCamera)
 </script>
 
 <style scoped>
+.camera-layout-wrapper {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 2rem;
+}
+
 .camera-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1rem;
+  width: 100%;
+  max-width: 640px;
 }
 
 .camera-video {
   background-color: #000;
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  height: auto;
 }
 
 .button-area {
   display: flex;
-  gap: 1rem;
+  justify-content: center;
+  width: 100%;
+  margin-top: 1rem;
 }
 
-.switch-button,
-.capture-button {
+.switch-button {
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
   font-weight: bold;
@@ -201,32 +225,75 @@ onBeforeUnmount(stopCamera)
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  transition:
-    background-color 0.2s,
-    opacity 0.2s;
-}
-
-.switch-button {
-  background-color: #f5222d; /* 切り替えボタンは赤系 */
+  transition: background-color 0.2s, opacity 0.2s;
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  background-color: #555;
+  z-index: 10;
 }
 
 .switch-button:hover:not(:disabled) {
-  background-color: #ff4d4f;
+  background-color: #ffffff;
 }
 
-.capture-button {
-  background-color: #1890ff; /* キャプチャボタンは青系 */
-}
-
-.capture-button:hover:not(:disabled) {
-  background-color: #40a9ff;
-}
-
-.switch-button:disabled,
-.capture-button:disabled {
+.switch-button:disabled {
   background-color: #ccc;
   cursor: not-allowed;
   opacity: 0.8;
+}
+
+
+.iphone-shutter-button {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  border: 4px solid #000000;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  outline: none;
+  box-shadow: 0 0 0 2px #ffffff inset;
+  
+
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  
+  transition: transform 0.08s ease-out;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+/* ボタンの内側の白い円 */
+.iphone-shutter-button::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: calc(100% - 8px);
+  height: calc(100% - 8px);
+  background-color: #ffffff;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.08s ease-out, height 0.08s ease-out, background-color 0.08s ease-out;
+}
+
+
+.iphone-shutter-button.is-pressing {
+  transform: scale(0.9); 
+}
+
+.iphone-shutter-button.is-pressing::after {
+  width: calc(100% - 24px);
+  background-color: #8e8e93; 
+}
+
+
+.iphone-shutter-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .error-message {
