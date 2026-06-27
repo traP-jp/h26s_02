@@ -141,8 +141,8 @@ onBeforeUnmount(stopCamera)
     <button
       :disabled="!isCameraActive || isSwitching"
       :class="['switch-button', { 'is-switching': isSwitching }]"
-      @click="switchCamera"
       aria-label="カメラ切り替え"
+      @click="switchCamera"
     >
       <span class="switch-icon"></span>
     </button>
