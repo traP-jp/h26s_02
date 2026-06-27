@@ -14,7 +14,7 @@ import (
 	"github.com/traP-jp/h26s_02/repository"
 	"github.com/traP-jp/h26s_02/storage"
 
-	_ "image/jpeg"
+	_ "image/jpeg" // フォーマット確認のために blank import
 	_ "image/png"
 )
 
