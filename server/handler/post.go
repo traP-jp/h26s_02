@@ -35,7 +35,7 @@ func NewPost(db repository.DB, postRepository repository.Post, tagRepository rep
 }
 
 type PostPostResponse struct {
-	ID uuid.UUID
+	ID uuid.UUID `json:"id"`
 }
 
 func (p *Post) PostPost(c *echo.Context) error {
