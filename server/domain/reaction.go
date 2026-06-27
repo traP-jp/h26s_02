@@ -1,17 +1,17 @@
 package domain
 
 type Reaction struct {
-	id    string
+	id    int
 	count int
 }
 
-func NewReaction(id string, count int) *Reaction {
+func NewReaction(id int, count int) *Reaction {
 	return &Reaction{
 		id:    id,
 		count: count,
 	}
 }
-func (r *Reaction) GetID() string {
+func (r *Reaction) GetID() int {
 	return r.id
 }
 func (r *Reaction) GetCount() int {

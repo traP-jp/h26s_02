@@ -1,29 +1,30 @@
 package domain
 
 import (
-	"github.com/google/uuid"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type Post struct {
-	id        string
+	id        uuid.UUID
 	userName  string
-	createdAt string
+	createdAt time.Time
 }
 
 func NewPost(userName string) *Post {
 	return &Post{
-		id:        uuid.New().String(),
+		id:        uuid.New(),
 		userName:  userName,
-		createdAt: time.Now().Format(time.RFC3339),
+		createdAt: time.Now(),
 	}
 }
-func (p *Post) GetID() string {
+func (p *Post) GetID() uuid.UUID {
 	return p.id
 }
 func (p *Post) GetUserName() string {
 	return p.userName
 }
-func (p *Post) GetCreatedAt() string {
+func (p *Post) GetCreatedAt() time.Time {
 	return p.createdAt
 }
