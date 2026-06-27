@@ -53,7 +53,7 @@ jobs:
           cache-dependency-path: server/go.sum
 
       - name: Run golangci-lint
-        uses: reviewdog/action-golangci-lint@3dfdce20f5ca12d264c214abb993dbb40834da90 # v2.7.2
+        uses: reviewdog/action-golangci-lint@c76cceaaab89abe74e649d2e34c6c9adc26662d2 # v2.10.0
         with:
           go_version_file: ./server/go.mod
           workdir: ./server
