@@ -34,7 +34,7 @@ func (t *Tag) CreatePostTags(ctx context.Context, postID uuid.UUID, tags []strin
 		})
 	}
 
-	_, err := t.db.db.NamedExecContext(ctx, "INSERT INTO `post_tags` (`post_id`, `name`) VALUES (:post_id, :tag)", postTags)
+	_, err := t.db.DB(ctx).NamedExecContext(ctx, "INSERT INTO `post_tags` (`post_id`, `name`) VALUES (:post_id, :tag)", postTags)
 	if err != nil {
 		return fmt.Errorf("create post tags: %w", err)
 	}
