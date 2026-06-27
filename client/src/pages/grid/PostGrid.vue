@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import PostImage from '@/components/PostImage.vue'
-const posts = Array.from({ length: 100 }, (_, index) => index)
 </script>
 
 <template>
   <div class="grid">
-    <PostImage v-for="num in posts" :key="num" :num="num" />
+    <PostImage v-for="num in 100" :key="num" :num="num" />
   </div>
 </template>
 

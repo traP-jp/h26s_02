@@ -15,12 +15,12 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/search',
     name: 'Search',
-    component: () => import('@/pages/timeline/SearchView.vue'),
+    component: () => import('@/pages/grid/SearchView.vue'),
   },
   {
     path: '/user',
     name: 'User',
-    component: () => import('@/pages/timeline/UserView.vue'),
+    component: () => import('@/pages/grid/UserView.vue'),
   },
   {
     path: '/samples',

@@ -33,6 +33,7 @@ AWS_SECRET_ACCESS_KEY=rustfsadmin
 AWS_REGION=us-east-1
 S3_BUCKET_NAME=h26s-02
 S3_ENDPOINT=http://s3:9000
+LOCAL=true
 ```
 
 ```bash
@@ -50,6 +51,8 @@ task up
   - S3 互換のオブジェクトストレージ
   - http://localhost:9001 を開くと管理画面が見られる
   - アカウント、キー、ともに `rustfsadmin`
+
+なんかうまく動かないな、という場合は `task clean` でリセットした後にもう 1 回 `task up` を試す。
 
 ### 開発サーバーの停止
 
