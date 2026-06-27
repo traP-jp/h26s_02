@@ -150,15 +150,15 @@ const drawCanvas = () => {
   ctx.globalAlpha = 1.0
 }
 
-onMounted(() => {
+onMounted(async () => {
   const state = history.state as { capturedImage?: string }
 
-  if (state?.capturedImage) {
+  if (state.capturedImage) {
     console.log('[RadialBlur] 撮影された写真を自動読込します。')
     loadImageFromDataUrl(state.capturedImage)
   } else {
     console.warn('[RadialBlur] 撮影データが見つかりません。カメラ画面に戻ります。')
-    router.push('/camera')
+    await router.push('/camera')
   }
 })
 

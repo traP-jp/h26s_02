@@ -89,7 +89,7 @@ const switchCamera = async () => {
   console.log('カメラの切り替え処理が完了しました。')
 }
 
-const captureAndNavigate = () => {
+const captureAndNavigate = async () => {
   console.log('キャプチャ処理を開始します。')
   const video = videoRef.value
 
@@ -113,7 +113,7 @@ const captureAndNavigate = () => {
 
     const dataUrl = canvas.toDataURL('image/png')
 
-    router.push({
+    await router.push({
       path: '/samples/yakudo',
       state: { capturedImage: dataUrl },
     })
