@@ -10,5 +10,5 @@ type Image interface {
 	SaveImage(ctx context.Context, name string, image io.Reader) error
 	// 一時URLを発行する。
 	// 該当する名前のファイルが存在しなかったら ErrImageNotFound を返す。
-	GetTemporalyUrl(ctx context.Context, name string) (string, error)
+	GetTemporalyURL(ctx context.Context, name string) (string, error)
 }
