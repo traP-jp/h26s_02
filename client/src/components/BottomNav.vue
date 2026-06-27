@@ -8,9 +8,11 @@ import MSIcon from '@/components/MSIcon.vue'
       <RouterLink to="/timeline" class="button">
         <MSIcon name="home-outline" :size="24" />
       </RouterLink>
-      <div class="button">
+
+      <RouterLink to="/camera" class="button">
         <MSIcon name="photo-camera-outline" :size="24" />
-      </div>
+      </RouterLink>
+      
       <div class="button">
         <MSIcon name="search" :size="24" />
       </div>
