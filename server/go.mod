@@ -30,4 +30,5 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.36.6 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.43.3 // indirect
 	golang.org/x/net v0.56.0 // indirect
+	golang.org/x/time v0.14.0 // indirect
 )

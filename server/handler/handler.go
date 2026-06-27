@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/labstack/echo/v5"
+	"github.com/labstack/echo/v5/middleware"
 )
 
 type Handler struct {
@@ -19,6 +20,7 @@ func NewHandler(user *User, post *Post) *Handler {
 }
 
 func (h *Handler) Start(e *echo.Echo) {
+	e.Use(middleware.Recover(), middleware.RequestLogger())
 
 	api := e.Group("/api", AuthMiddleware())
 	api.GET("/users/me", h.user.GetMe)
