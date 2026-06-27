@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v5"
@@ -123,4 +124,71 @@ func (p *Post) PostPost(c *echo.Context) error {
 	return c.JSON(http.StatusCreated, PostPostResponse{
 		ID: postID,
 	})
+}
+
+type GetPostsRequest struct {
+	Before uuid.UUID `query:"before"`
+	Limit  int       `query:"limit"`
+}
+
+type ReactionResponse struct {
+	ID    int `json:"id"`
+	Count int `json:"count"`
+}
+
+type PostResponse struct {
+	ID        uuid.UUID          `json:"id"`
+	UserName  string             `json:"userName"`
+	Tags      []string           `json:"tags"`
+	ImageURL  string             `json:"imageUrl"`
+	Reactions []ReactionResponse `json:"reactions"`
+	CreatedAt time.Time          `json:"createdAt"`
+}
+
+func (p *Post) GetPosts(c *echo.Context) error {
+	req := GetPostsRequest{Limit: 30}
+	if err := c.Bind(&req); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid query parameters")
+	}
+
+	var referenceTime time.Time
+	if req.Before != uuid.Nil {
+		post, err := p.postRepository.GetPostByID(req.Before.String())
+		if err != nil {
+			return echo.NewHTTPError(http.StatusNotFound, "post not found")
+		}
+		referenceTime = post.GetCreatedAt()
+	} else {
+		referenceTime = time.Now()
+	}
+
+	posts, err := p.postRepository.GetPosts(referenceTime, req.Limit)
+	if err != nil {
+		log.Printf("failed to get posts: %v\n", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
+	}
+
+	response := make([]PostResponse, 0, len(posts))
+	for _, post := range posts {
+		reactions := make([]ReactionResponse, 0)
+		for _, reaction := range post.GetReactions() {
+			if reaction.GetCount() > 0 {
+				reactions = append(reactions, ReactionResponse{
+					ID:    reaction.GetID(),
+					Count: reaction.GetCount(),
+				})
+			}
+		}
+
+		response = append(response, PostResponse{
+			ID:        post.GetID(),
+			UserName:  post.GetUserName(),
+			Tags:      post.GetTags(),
+			ImageURL:  "",
+			Reactions: reactions,
+			CreatedAt: post.GetCreatedAt(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, response)
 }
