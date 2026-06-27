@@ -23,7 +23,8 @@ import MSIcon from '@/components/MSIcon.vue'
   position: fixed;
   z-index: 10;
   bottom: 0;
-  width: 100%;
+  left: 0;
+  width: 100vw;
   height: 80px;
   display: flex;
   justify-content: center;
