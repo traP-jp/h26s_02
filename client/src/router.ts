@@ -52,6 +52,7 @@ const routes: RouteRecordRaw[] = [
     name: 'Yakudo',
     component: () => import('@/samples/YakudoView.vue'),
   },
+
 ]
 
 const router = createRouter({
