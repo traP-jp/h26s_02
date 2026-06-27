@@ -12,7 +12,7 @@ import MSIcon from '@/components/MSIcon.vue'
       <RouterLink to="/camera" class="button">
         <MSIcon name="photo-camera-outline" :size="24" />
       </RouterLink>
-      
+
       <div class="button">
         <MSIcon name="search" :size="24" />
       </div>

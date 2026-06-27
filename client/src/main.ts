@@ -13,5 +13,9 @@ const app = createApp(App)
 import router from '@/router'
 app.use(router)
 
+import { createPinia } from 'pinia'
+const pinia = createPinia()
+app.use(pinia)
+
 console.log('Mode:', import.meta.env.MODE)
 app.mount('#app')

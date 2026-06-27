@@ -12,7 +12,7 @@ const routes: RouteRecordRaw[] = [
     name: 'Timeline',
     component: () => import('@/pages/timeline/TimelineView.vue'),
   },
-   {
+  {
     path: '/camera',
     name: 'Camera',
     component: () => import('@/pages/camera/CameraView.vue'),
@@ -51,6 +51,11 @@ const routes: RouteRecordRaw[] = [
     path: '/samples/yakudo',
     name: 'Yakudo',
     component: () => import('@/samples/YakudoView.vue'),
+  },
+  {
+    path: '/samples/orientation',
+    name: 'Orientation',
+    component: () => import('@/samples/OrientationView.vue'),
   },
 ]
 
