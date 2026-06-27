@@ -1,8 +1,6 @@
 <template>
   <div class="radial-blur-container">
     <div class="controls">
-      <input type="file" accept="image/*" @change="handleImageUpload" />
-
       <div v-if="imageLoaded" class="sliders">
         <label class="slider-label">
           ぼかしの強さ (ブレ幅):
@@ -43,20 +41,25 @@
       </div>
     </div>
 
+    <div v-if="!imageLoaded" class="no-image-message">
+      画像を読み込んでいます、または撮影データが見つかりません。
+    </div>
+
     <div v-show="imageLoaded" class="canvas-wrapper">
       <canvas ref="canvasRef"></canvas>
     </div>
   </div>
 
   <MotionView @update-blur-time="onBlurUpdate" />
-
 </template>
 
-
-
 <script setup lang="ts">
-import { ref } from 'vue'
+
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import MotionView from './MotionView.vue'
+
+const router = useRouter()
 
 const onBlurUpdate = (value: number) => {
   blurTime.value = value
@@ -70,61 +73,58 @@ const resetBlur = () => {
 
 const MAX_BLUR_TIME = 2000
 
-
-// テンプレート参照の型定義
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 const imageLoaded = ref<boolean>(false)
 
-// パラメータの型定義
 const blurStrength = ref<number>(0.5)
 const centerX = ref<number>(0.5)
 const centerY = ref<number>(0.5)
 const blurTime = ref<number>(0)
 
-// 画像オブジェクトを保持
 let sourceImage: HTMLImageElement | null = null
 
+onMounted(() => {
+  const state = history.state as { capturedImage?: string }
+
+  if (state && state.capturedImage) {
+    console.log('[RadialBlur] 撮影された写真を自動読込します。')
+    loadImageFromDataUrl(state.capturedImage)
+  } else {
+    console.warn('[RadialBlur] 撮影データが見つかりません。カメラ画面に戻ります。')
+    router.push('/camera') 
+  }
+})
+
+const loadImageFromDataUrl = (dataUrl: string) => {
+  sourceImage = new Image()
+
+  sourceImage.onload = () => {
+    if (!sourceImage) return
+    console.log(`[RadialBlur] 写真のデコード完了: ${sourceImage.width}x${sourceImage.height}px`)
+    imageLoaded.value = true
+    resetBlur()
+    drawCanvas()
+  }
+
+  sourceImage.onerror = (err) => {
+    console.error('[RadialBlur] 写真のデコードに失敗しました:', err)
+  }
+
+  sourceImage.src = dataUrl
+}
+
 const handleImageUpload = (event: Event) => {
-  // input要素とファイルオブジェクトの型キャスト
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
 
-  if (!file) {
-    console.warn('[RadialBlur] ファイルが選択されませんでした。')
-    return
-  }
-
-  console.log(`[RadialBlur] 画像読み込み開始: ${file.name}`)
-
-  if (!file.type.startsWith('image/')) {
-    console.error('[RadialBlur] エラー: 画像以外のファイル形式です。')
-    alert('画像ファイルを選択してください。')
-    return
-  }
+  if (!file) return
 
   const reader = new FileReader()
-
-  reader.onload = (e: ProgressEvent<FileReader>) => {
-    sourceImage = new Image()
-
-    sourceImage.onload = () => {
-      if (!sourceImage) return // TypeScriptのNullチェック
-      console.log(`[RadialBlur] 画像デコード完了: ${sourceImage.width}x${sourceImage.height}px`)
-      imageLoaded.value = true
-      resetBlur()
-      drawCanvas()
-    }
-
-    sourceImage.onerror = (err) => {
-      console.error('[RadialBlur] 画像のデコードに失敗しました:', err)
-    }
-
-    // onload時のresultの型チェックと代入
+  reader.onload = (e) => {
     if (e.target?.result && typeof e.target.result === 'string') {
-      sourceImage.src = e.target.result
+      loadImageFromDataUrl(e.target.result)
     }
   }
-
   reader.readAsDataURL(file)
 }
 
@@ -138,31 +138,21 @@ const drawCanvas = () => {
     return
   }
 
-  // キャンバスサイズを画像サイズに合わせる
   canvas.width = sourceImage.width
   canvas.height = sourceImage.height
 
-  // 描画をクリア
   ctx.clearRect(0, 0, canvas.width, canvas.height)
-
-  ctx.fillStyle = '#000000' // 白だとやや薄い
+  ctx.fillStyle = '#000000'
   ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-  // 2. オリジナル画像を一度描画（これが透けない中心の基盤になります）
   ctx.globalCompositeOperation = 'source-over'
   ctx.globalAlpha = 1.0
   ctx.drawImage(sourceImage, 0, 0)
-
-  // 3. 集中ぼかし（放射状）を重ねる
-  // 【ここが重要】画面を明るくするために 'screen' を使用
-  // ctx.globalCompositeOperation = 'screen'
 
   const strength = Math.min(blurTime.value / MAX_BLUR_TIME / 2, 1)
   const passes = 60
   const originX: number = canvas.width * centerX.value
   const originY: number = canvas.height * centerY.value
-
-  console.log(`[RadialBlur] 描画更新: 強度=${blurStrength.value}, 中心=(${originX}, ${originY})`)
 
   ctx.globalAlpha = (1.0 / passes) * 3
 
@@ -182,6 +172,7 @@ const drawCanvas = () => {
 </script>
 
 <style scoped>
+/* 既存のスタイルはそのまま */
 .radial-blur-container {
   display: flex;
   flex-direction: column;
@@ -228,5 +219,12 @@ canvas {
   display: block;
   max-width: 100%;
   height: auto;
+}
+
+/* 追加: エラー表示用のスタイル */
+.no-image-message {
+  color: #999;
+  font-style: italic;
+  padding: 20px;
 }
 </style>
