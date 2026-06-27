@@ -58,3 +58,4 @@ jobs:
           go_version_file: ./server/go.mod
           workdir: ./server
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          fail_level: any
