@@ -26,7 +26,9 @@ func main() {
 
 	userHandler := handler.NewUser()
 
-	h := handler.NewHandler(userHandler, postHandler)
+	tagHandler := handler.NewTag(tagRepository)
+
+	h := handler.NewHandler(userHandler, postHandler, tagHandler)
 	e := echo.New()
 
 	h.Start(e)
