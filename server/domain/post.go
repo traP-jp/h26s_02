@@ -12,7 +12,7 @@ type Post struct {
 	createdAt time.Time
 }
 
-func NewPost(userName string) *Post {
+func NewPost(userName string, id uuid.UUID, createdAt time.Time) *Post {
 	return &Post{
 		id:        uuid.New(),
 		userName:  userName,
