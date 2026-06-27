@@ -5,4 +5,6 @@
 - ikura-hamu
 - kaomojikun
 - haruki-0920
+- hachimitsu-pichi
 - neko_reset
+- kitsne

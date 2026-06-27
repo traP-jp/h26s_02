@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const videoRef = ref<HTMLVideoElement | null>(null)
 const errorMessage = ref<string>('')
 const isCameraActive = ref<boolean>(false)
 const isSwitching = ref<boolean>(false)
-
 const isPressing = ref<boolean>(false)
 
 let currentStream: MediaStream | null = null
@@ -87,7 +89,7 @@ const switchCamera = async () => {
   console.log('カメラの切り替え処理が完了しました。')
 }
 
-const captureAndDownload = () => {
+const captureAndNavigate = () => {
   console.log('キャプチャ処理を開始します。')
   const video = videoRef.value
 
@@ -108,21 +110,17 @@ const captureAndDownload = () => {
     }
 
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
-    console.log(`Canvasへの描画が完了しました (サイズ: ${canvas.width}x${canvas.height})。`)
-
+    
     const dataUrl = canvas.toDataURL('image/png')
-    const link = document.createElement('a')
-    link.href = dataUrl
-    const filename = `capture_${new Date().getTime()}.png`
-    link.download = filename
 
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+    router.push({
+      path: '/samples/yakudo', 
+      state: { capturedImage: dataUrl } 
+    })
 
-    console.log(`画像のダウンロード処理を実行しました: ${filename}`)
+    console.log('撮影成功。プレビュー画面へ遷移します。')
   } catch (error) {
-    console.error('キャプチャまたはダウンロード中にエラーが発生しました:', error)
+    console.error('キャプチャ中にエラーが発生しました:', error)
   }
 }
 
@@ -132,11 +130,11 @@ onBeforeUnmount(stopCamera)
 
 <template>
   <div class="camera-layout-wrapper">
-    <!-- <div>
+    <div>
         <RouterLink to="/" class="back-button">
           ←
         </RouterLink>
-    </div> -->
+    </div>
 
     <button
       :disabled="!isCameraActive || isSwitching"
@@ -159,18 +157,19 @@ onBeforeUnmount(stopCamera)
         ></video>
       </div>
 
-      <div class="button-area">
-        <button 
-          :disabled="!isCameraActive || isSwitching"
-          :class="['iphone-shutter-button', { 'is-pressing': isPressing }]" 
-          @mousedown="startPress"
-          @mouseup="endPress"
-          @mouseleave="endPress"
-          @touchstart.passive="startPress"
-          @touchend.passive="endPress"
-          @click="captureAndDownload"
-        ></button>
-      </div>
+
+    <div class="button-area">
+      <button 
+        :disabled="!isCameraActive || isSwitching"
+        :class="['iphone-shutter-button', { 'is-pressing': isPressing }]" 
+        @mousedown="startPress"
+        @mouseup="endPress"
+        @mouseleave="endPress"
+        @touchstart.passive="startPress"
+        @touchend.passive="endPress"
+        @click="captureAndNavigate"
+      ></button>
+    </div>
 
       <div v-if="errorMessage" class="error-message">
         {{ errorMessage }}
