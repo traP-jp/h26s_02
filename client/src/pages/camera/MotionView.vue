@@ -1,20 +1,20 @@
 <template>
   <div class="shake-container">
     <div v-if="!isPermissionGranted" class="init-screen">
-      <p>この機能はデバイスのセンサーを利用します。</p>
       <button class="start-btn" @click="requestAccess">開始する</button>
     </div>
 
-    <div v-else class="play-screen">
+    <!-- <div v-else class="play-screen">
       <p>スマホを振ってみてください！</p>
       <div class="device-icon" :class="{ shaking: isShaking }">［スマートフォン］</div>
+    </div> -->
+
+    <div v-show="imageLoaded" class="canvas-wrapper">
+      <canvas ref="canvasRef"></canvas>
     </div>
 
-    <div class="debug-panel">
-      <p>【デバッグログ】</p>
-      <ul class="log-list">
-        <li v-for="(log, index) in debugLogs" :key="index">{{ log }}</li>
-      </ul>
+    <div class="action-area">
+      <button class="dummy-post-btn" @click="handleDummyPost">POST</button>
     </div>
   </div>
 </template>
@@ -44,7 +44,6 @@ let lastX = 0,
   lastY = 0,
   lastZ = 0
 let lastUpdate = 0
-
 
 const handleMotion = (event: DeviceMotionEvent) => {
   if (isShaking.value) return
@@ -154,6 +153,11 @@ onUnmounted(() => {
     window.removeEventListener('devicemotion', handleMotion, false)
   }
 })
+
+const handleDummyPost = () => {
+  console.log('[Dummy Post] ボタンがクリックされました。現在のぼかし時間:', blurTime.value)
+  alert(`画像をPOSTしました！（ダミー処理 / blurTime: ${blurTime.value}ms）`)
+}
 </script>
 
 <style scoped>
@@ -224,5 +228,37 @@ onUnmounted(() => {
   color: #333;
   padding-left: 20px;
   word-break: break-all;
+}
+
+.action-area {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.dummy-post-btn {
+  padding: 14px 40px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #ffffff;
+  background-color: #3182ce; /* スッキリしたブルー */
+  border: none;
+  border-radius: 30px; /* 丸みのあるかわいいデザイン */
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(49, 130, 206, 0.3);
+  transition: all 0.2s ease;
+}
+
+/* ホバー（PCでマウスを乗せたとき）やタップしたときの動き */
+.dummy-post-btn:hover {
+  background-color: #2b6cb0;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 8px rgba(49, 130, 206, 0.4);
+}
+
+.dummy-post-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 4px rgba(49, 130, 206, 0.2);
 }
 </style>

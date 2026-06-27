@@ -1,46 +1,5 @@
 <template>
   <div class="radial-blur-container">
-    <!-- <div class="controls">
-      <div v-if="imageLoaded" class="sliders">
-        <label class="slider-label">
-          ぼかしの強さ (ブレ幅):
-          <input
-            v-model.number="blurStrength"
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
-            @input="drawCanvas"
-          />
-          {{ blurStrength }}
-        </label>
-        <label class="slider-label">
-          中心位置 X:
-          <input
-            v-model.number="centerX"
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
-            @input="drawCanvas"
-          />
-          {{ Math.round(centerX * 100) }}%
-        </label>
-        <label class="slider-label">
-          中心位置 Y:
-          <input
-            v-model.number="centerY"
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
-            @input="drawCanvas"
-          />
-          {{ Math.round(centerY * 100) }}%
-        </label>
-      </div>
-    </div> -->
-
     <div v-show="imageLoaded" class="canvas-wrapper">
       <canvas ref="canvasRef"></canvas>
     </div>
@@ -52,7 +11,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import MotionView from './MotionView.vue'
+import MotionView from '@/pages/camera/MotionView.vue'
 
 const router = useRouter()
 
