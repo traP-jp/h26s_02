@@ -8,9 +8,21 @@ importers:
 
   .:
     dependencies:
+      '@fontsource-variable/material-symbols-outlined':
+        specifier: ^5.2.45
+        version: 5.2.45
       '@fontsource-variable/noto-sans-jp':
         specifier: ^5.2.9
         version: 5.2.10
+      '@fontsource-variable/reddit-sans':
+        specifier: ^5.2.7
+        version: 5.2.7
+      '@fontsource/m-plus-1p':
+        specifier: ^5.2.9
+        version: 5.2.9
+      '@iconify/vue':
+        specifier: ^5.0.1
+        version: 5.0.1(vue@3.5.38(typescript@5.9.3))
       '@vitejs/plugin-basic-ssl':
         specifier: ^2.3.0
         version: 2.3.0(vite@7.3.5(@types/node@24.13.2)(jiti@2.7.0)(yaml@2.9.0))
@@ -301,8 +313,17 @@ packages:
     resolution: {integrity: sha512-43/qtrDUokr7LJqoF2c3+RInu/t4zfrpYdoSDfYyhg52rwLV6TnOvdG4fXm7IkSB3wErkcmJS9iEhjVtOSEjjA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
+  '@fontsource-variable/material-symbols-outlined@5.2.45':
+    resolution: {integrity: sha512-Hx6KX6W3rtMWEte72lTmV/4dJIpcAOi/tappR19Tz2dbvlWpboGqu0m7sJu7uIlLlDNuHjr/QComLCap6gSCug==}
+
   '@fontsource-variable/noto-sans-jp@5.2.10':
     resolution: {integrity: sha512-m0XfZ38rZtCaGAuAQL0cBPQ6fc/RguYEOqw66zvuLOV9vNRUBf9MFqyoazTu2JVCRIcnkrxbwF29UUaHHgTKdg==}
+
+  '@fontsource-variable/reddit-sans@5.2.7':
+    resolution: {integrity: sha512-JT4joaX85iEZ74B3mMLZh/OFotUdhPwuqAQB1l2XNcOv99VzOUe4eAehlmx1wP3fK3TSxqGb6FFraYPU5y9/3Q==}
+
+  '@fontsource/m-plus-1p@5.2.9':
+    resolution: {integrity: sha512-SdstxK+xoUHmSkbmYTnPRWZWEfuQax6ZR0XbFhU82z5GA4X/YRE+VX54q0aDRJ5btej/fvFtww3qHFvp9A06GQ==}
 
   '@humanfs/core@0.19.2':
     resolution: {integrity: sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA==}
@@ -323,6 +344,14 @@ packages:
   '@humanwhocodes/retry@0.4.3':
     resolution: {integrity: sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==}
     engines: {node: '>=18.18'}
+
+  '@iconify/types@2.0.0':
+    resolution: {integrity: sha512-+wluvCrRhXrhyOmRDJ3q8mux9JkKy5SJ/v8ol2tu4FVjyYvtEzkc/3pK15ET6RKg4b4w4BmTk1+gsCUhf21Ykg==}
+
+  '@iconify/vue@5.0.1':
+    resolution: {integrity: sha512-aumwwooJlFJ5H5qYWB6ZTAyM0C8hpfcSVLB9/a3qnH1GGvIJ+FEbpEs4s/HfErYe/M5qZeLjwmESR5fFm3lXEw==}
+    peerDependencies:
+      vue: '>=3.0.0'
 
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
@@ -1436,7 +1465,13 @@ snapshots:
       '@eslint/core': 0.17.0
       levn: 0.4.1
 
+  '@fontsource-variable/material-symbols-outlined@5.2.45': {}
+
   '@fontsource-variable/noto-sans-jp@5.2.10': {}
+
+  '@fontsource-variable/reddit-sans@5.2.7': {}
+
+  '@fontsource/m-plus-1p@5.2.9': {}
 
   '@humanfs/core@0.19.2':
     dependencies:
@@ -1453,6 +1488,13 @@ snapshots:
   '@humanwhocodes/module-importer@1.0.1': {}
 
   '@humanwhocodes/retry@0.4.3': {}
+
+  '@iconify/types@2.0.0': {}
+
+  '@iconify/vue@5.0.1(vue@3.5.38(typescript@5.9.3))':
+    dependencies:
+      '@iconify/types': 2.0.0
+      vue: 3.5.38(typescript@5.9.3)
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:

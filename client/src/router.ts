@@ -8,6 +8,21 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/pages/TopView.vue'),
   },
   {
+    path: '/timeline',
+    name: 'Timeline',
+    component: () => import('@/pages/timeline/TimelineView.vue'),
+  },
+  {
+    path: '/search',
+    name: 'Search',
+    component: () => import('@/pages/timeline/SearchView.vue'),
+  },
+  {
+    path: '/user',
+    name: 'User',
+    component: () => import('@/pages/timeline/UserView.vue'),
+  },
+  {
     path: '/samples',
     name: 'Samples',
     component: () => import('@/samples/SamplesView.vue'),
