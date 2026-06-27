@@ -58,6 +58,12 @@ import MotionView from './MotionView.vue'
 
 const router = useRouter()
 
+// ==========================================
+// 【修正】不足していたカメラからの引き継ぎデータ用 ref 変数を追加
+// ==========================================
+const initialBlurTime = ref<number>(0)
+const initialAcceleration = ref({ x: 0, y: 0, z: 0 })
+
 const onBlurUpdate = (value: number) => {
   blurTime.value = value
   drawCanvas()
@@ -115,24 +121,27 @@ const drawCanvas = () => {
   // 描画をクリア
   ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-  ctx.fillStyle = '#000000' // 白だとやや薄い
+  ctx.fillStyle = '#000000'
   ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-  // 2. オリジナル画像を一度描画（これが透けない中心の基盤になります）
+  // 2. オリジナル画像を一度描画
   ctx.globalCompositeOperation = 'source-over'
   ctx.globalAlpha = 1.0
   ctx.drawImage(sourceImage, 0, 0)
 
-  // 3. 集中ぼかし（放射状）を重ねる
-  // 【ここが重要】画面を明るくするために 'screen' を使用
-  // ctx.globalCompositeOperation = 'screen'
+  // ==========================================
+  // 【修正】撮影時の躍動感 ＋ スライダーの強さ ＋ フリフリ躍動感 を全て合算
+  // ==========================================
+  // スライダーの blurStrength（0〜1）を MAX_BLUR_TIME に掛け合わせて ms 相当に換算します
+  const sliderBonusTime = blurStrength.value * MAX_BLUR_TIME
+  const totalBlurTime = initialBlurTime.value + blurTime.value + sliderBonusTime
 
-  const strength = Math.min(blurTime.value / MAX_BLUR_TIME / 2, 1)
+  const strength = Math.min(totalBlurTime / MAX_BLUR_TIME / 2, 1)
   const passes = 60
   const originX: number = canvas.width * centerX.value
   const originY: number = canvas.height * centerY.value
 
-  console.log(`[RadialBlur] 描画更新: 強度=${blurStrength.value}, 中心=(${originX}, ${originY})`)
+  console.log(`[RadialBlur] 描画更新: 総ぼかし時間=${totalBlurTime}ms, 強度=${strength}`)
 
   ctx.globalAlpha = (1.0 / passes) * 3
 
@@ -150,15 +159,23 @@ const drawCanvas = () => {
   ctx.globalAlpha = 1.0
 }
 
-onMounted(async () => {
-  const state = history.state as { capturedImage?: string }
+onMounted(() => {
+  const state = history.state as {
+    capturedImage?: string
+    blurTime?: number
+    acceleration?: { x: number; y: number; z: number }
+  }
 
-  if (state.capturedImage) {
-    console.log('[RadialBlur] 撮影された写真を自動読込します。')
+  if (state && state.capturedImage) {
+    console.log('[RadialBlur] 撮影された写真とセンサーデータを読み込みます。')
+    initialBlurTime.value = state.blurTime || 0
+    initialAcceleration.value = state.acceleration || { x: 0, y: 0, z: 0 }
     loadImageFromDataUrl(state.capturedImage)
   } else {
-    console.warn('[RadialBlur] 撮影データが見つかりません。カメラ画面に戻ります。')
-    await router.push('/camera')
+    console.warn('[RadialBlur] 撮影データがないため、テスト用画像を表示します。')
+    initialBlurTime.value = 0
+    // 直接遷移したとき用のダミー画像（Picsum）
+    loadImageFromDataUrl('https://picsum.photos/800/800')
   }
 })
 
