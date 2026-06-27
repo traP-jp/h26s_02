@@ -28,6 +28,7 @@ func (h *Handler) Start(e *echo.Echo) {
 	api.GET("/users/me", h.user.GetMe)
 	api.POST("/posts", h.post.PostPost)
 	api.GET("/posts/:id", h.post.GetPost)
+	api.POST("/posts/:id/reactions", h.post.PostReaction)
 	api.GET("/tags", h.tag.GetTags)
 	// api.GET("/posts", h.post.GetPosts)
 
