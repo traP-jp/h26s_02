@@ -24,5 +24,6 @@ const iconName = computed(() => {
 <style scoped>
 .material-icon-svg {
   color: inherit;
+  flex-shrink: 0;
 }
 </style>
