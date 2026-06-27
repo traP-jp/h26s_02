@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -170,4 +171,26 @@ func (p *Post) PostPost(c *echo.Context) error {
 	return c.JSON(http.StatusCreated, PostPostResponse{
 		ID: postID,
 	})
+}
+
+func (p *Post) DeleteReaction(c *echo.Context) error {
+	postID, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid post ID")
+	}
+
+	userName, err := GetUserName(c)
+	if err != nil {
+		return err
+	}
+	deleteReactionID, err := strconv.Atoi(c.Param("reaction_id"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid reaction ID")
+	}
+	err = p.reactionRepository.DeleteReaction(c.Request().Context(), postID, userName, deleteReactionID)
+	if err != nil {
+		log.Printf("failed to delete reaction: %v\n", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
+	}
+	return c.NoContent(http.StatusNoContent)
 }
