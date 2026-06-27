@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import PostGrid from '@/pages/timeline/PostGrid.vue'
 import BottomNav from '@/components/BottomNav.vue'
+import TimelineItem from './TimelineItem.vue'
 </script>
 
 <template>
-  <PostGrid />
+  <TimelineItem v-for="num in 100" :key="num" />
   <BottomNav />
 </template>
