@@ -12,7 +12,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v5"
-	"github.com/traP-jp/h26s_02/domain"
 	"github.com/traP-jp/h26s_02/repository"
 	"github.com/traP-jp/h26s_02/storage"
 
@@ -20,6 +19,10 @@ import (
 	_ "image/png"
 )
 
+type reactionCountResponse struct {
+	ID    int `json:"id"`
+	Count int `json:"count"`
+}
 type Post struct {
 	db                 repository.DB
 	postRepository     repository.Post
@@ -56,6 +59,13 @@ func (h *Post) GetPost(c *echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid post ID")
 	}
+	reactionCountResponses := make([]reactionCountResponse, 0, len(reactions))
+	for _, reaction := range reactions {
+		reactionCountResponses = append(reactionCountResponses, reactionCountResponse{
+			ID:    reaction.GetID(),
+			Count: reaction.GetCount(),
+		})
+	}
 	tags, err := h.tagRepository.GetPostTags(c.Request().Context(), postID)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid post ID")
@@ -64,13 +74,13 @@ func (h *Post) GetPost(c *echo.Context) error {
 		ID        uuid.UUID               `json:"id"`
 		UserName  string                  `json:"user_name"`
 		CreatedAt time.Time               `json:"created_at"`
-		Reactions []*domain.ReactionCount `json:"reactions"`
+		Reactions []reactionCountResponse `json:"reactions"`
 		Tags      []string                `json:"tags"`
 	}{
 		ID:        post.GetID(),
 		UserName:  post.GetUserName(),
 		CreatedAt: post.GetCreatedAt(),
-		Reactions: reactions,
+		Reactions: reactionCountResponses,
 		Tags:      tags,
 	})
 }
