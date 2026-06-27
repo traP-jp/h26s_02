@@ -8,6 +8,11 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/pages/TopView.vue'),
   },
   {
+    path: '/timeline',
+    name: 'Timeline',
+    component: () => import('@/pages/timeline/TimelineView.vue'),
+  },
+  {
     path: '/samples',
     name: 'Samples',
     component: () => import('@/samples/SamplesView.vue'),
