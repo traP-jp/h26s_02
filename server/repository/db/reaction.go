@@ -2,10 +2,13 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
+	"github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
 	"github.com/traP-jp/h26s_02/domain"
+	"github.com/traP-jp/h26s_02/repository"
 )
 
 type Reaction struct {
@@ -16,6 +19,27 @@ func NewReaction(db *DB) *Reaction {
 	return &Reaction{
 		db: db,
 	}
+}
+
+func (r *Reaction) CreateReaction(ctx context.Context, postID uuid.UUID, reactionID int, userName string) error {
+	_, err := r.db.DB(ctx).ExecContext(ctx,
+		"INSERT INTO post_reactions (post_id, reaction_id, user_name, created_at) VALUES (?, ?, ?, NOW())",
+		postID,
+		reactionID,
+		userName,
+	)
+	if err != nil {
+		if mysqlErr, ok := errors.AsType[*mysql.MySQLError](err); ok {
+			switch mysqlErr.Number {
+			case 1062:
+				return repository.ErrUniqueKeyDuplicated
+			case 1452:
+				return repository.ErrViolatedForeignKey
+			}
+		}
+		return fmt.Errorf("create reaction: %w", err)
+	}
+	return nil
 }
 
 func (r *Reaction) GetReactionCount(ctx context.Context, postID uuid.UUID) ([]*domain.ReactionCount, error) {
