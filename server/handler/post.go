@@ -89,8 +89,13 @@ func (p *Post) PostPost(c *echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
 	}
 
+	userName, err := GetUserName(c)
+	if err != nil {
+		return err
+	}
+
 	err = p.db.Transaction(c.Request().Context(), func(ctx context.Context) error {
-		err := p.postRepository.CreatePost(ctx, postID, "") // TODO ユーザー名
+		err := p.postRepository.CreatePost(ctx, postID, userName)
 		if err != nil {
 			log.Printf("failed to create post: %v\n", err)
 			return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
