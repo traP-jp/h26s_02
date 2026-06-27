@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -39,9 +40,13 @@ func NewImage() (*Image, error) {
 	if region == "" {
 		region = "us-east-1"
 	}
+	endpoint := os.Getenv("S3_ENDPOINT")
 
 	loadOptions := []func(*config.LoadOptions) error{
 		config.WithRegion(region),
+	}
+	if strings.HasPrefix(endpoint, "http://") {
+		loadOptions = append(loadOptions, config.WithRequestChecksumCalculation(aws.RequestChecksumCalculationWhenRequired))
 	}
 
 	accessKeyID := os.Getenv("AWS_ACCESS_KEY_ID")
@@ -57,7 +62,6 @@ func NewImage() (*Image, error) {
 		return nil, fmt.Errorf("load aws config: %w", err)
 	}
 
-	endpoint := os.Getenv("S3_ENDPOINT")
 	client := awss3.NewFromConfig(cfg, func(o *awss3.Options) {
 		if endpoint != "" {
 			o.BaseEndpoint = aws.String(endpoint)

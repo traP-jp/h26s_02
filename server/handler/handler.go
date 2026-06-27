@@ -22,6 +22,7 @@ func (h *Handler) Start(e *echo.Echo) {
 
 	api := e.Group("/api")
 	api.GET("/users/me", h.user.GetMe)
+	api.POST("/posts", h.post.PostPost)
 	// api.GET("/posts", h.post.GetPosts)
 
 	log.Fatal(e.Start(":8080"))
