@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import MSIcon from '@/components/MSIcon.vue'
 import PostImage from '@/components/PostImage.vue'
 import UserIcon from '@/components/UserIcon.vue'
+import TimelineReaction from '@/pages/timeline/TimelineReaction.vue'
 
 defineProps<{
   num: number
@@ -20,18 +20,7 @@ defineProps<{
       <span>#油淋鶏</span>
     </div>
     <div class="tl-item-reactions">
-      <div class="tl-item-reaction">
-        <MSIcon name="thumb-up-outline" class="reaction-icon" :size="24" />
-        <span class="tl-item-reaction-count">11</span>
-      </div>
-      <div class="tl-item-reaction">
-        <MSIcon name="favorite-outline" class="reaction-icon" :size="24" />
-        <span class="tl-item-reaction-count">6</span>
-      </div>
-      <div class="tl-item-reaction">
-        <MSIcon name="local-fire-department-outline" class="reaction-icon" :size="24" />
-        <span class="tl-item-reaction-count">7</span>
-      </div>
+      <TimelineReaction v-for="id in 3" :id="id" :key="id" :count="id * 10" :is-active="true" />
     </div>
   </div>
 </template>
@@ -69,16 +58,6 @@ defineProps<{
   display: flex;
   gap: 0.8rem;
   margin-top: 4px;
-  color: #cccccc;
-}
-
-.tl-item-reaction {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-}
-
-.tl-item-reaction-count {
-  font-weight: bold;
+  color: #808080;
 }
 </style>
