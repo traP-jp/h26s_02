@@ -1,19 +1,19 @@
 package domain
 
-type Reaction struct {
+type ReactionCount struct {
 	id    int
 	count int
 }
 
-func NewReaction(id int, count int) *Reaction {
-	return &Reaction{
+func NewReaction(id int, count int) *ReactionCount {
+	return &ReactionCount{
 		id:    id,
 		count: count,
 	}
 }
-func (r *Reaction) GetID() int {
+func (r *ReactionCount) GetID() int {
 	return r.id
 }
-func (r *Reaction) GetCount() int {
+func (r *ReactionCount) GetCount() int {
 	return r.count
 }

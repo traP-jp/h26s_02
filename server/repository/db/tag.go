@@ -18,6 +18,18 @@ func NewTag(db *DB) *Tag {
 		db: db,
 	}
 }
+func (t *Tag) GetPostTags(ctx context.Context, postID uuid.UUID) ([]string, error) {
+	var postTags []postTags
+	err := t.db.DB(ctx).SelectContext(ctx, &postTags, "SELECT name FROM post_tags WHERE post_id = ?", postID)
+	if err != nil {
+		return nil, fmt.Errorf("get post tags: %w", err)
+	}
+	tags := make([]string, 0, len(postTags))
+	for _, postTag := range postTags {
+		tags = append(tags, postTag.Name)
+	}
+	return tags, nil
+}
 
 func (t *Tag) CreatePostTags(ctx context.Context, postID uuid.UUID, tags []string) error {
 	if len(tags) == 0 {
