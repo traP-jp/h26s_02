@@ -24,6 +24,9 @@ defineProps<{
   word-wrap: normal;
   white-space: nowrap;
   direction: ltr;
+  user-select: none;
+  -webkit-user-select: none; /* Safari用 */
+  cursor: inherit;
 
   /* Material Symbols特有のバリエーション設定（お好みで調整可能） */
   font-variation-settings:

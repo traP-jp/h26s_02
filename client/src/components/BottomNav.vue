@@ -4,8 +4,17 @@ import MSIcon from '@/components/MSIcon.vue'
 
 <template>
   <div class="navigation">
-    <MSIcon name="home" />
-    Hello!
+    <div class="buttons">
+      <RouterLink to="/timeline" class="button">
+        <MSIcon name="home" />
+      </RouterLink>
+      <div class="button">
+        <MSIcon name="photo_camera" />
+      </div>
+      <div class="button">
+        <MSIcon name="search" />
+      </div>
+    </div>
   </div>
 </template>
 
@@ -16,6 +25,35 @@ import MSIcon from '@/components/MSIcon.vue'
   bottom: 0;
   width: 100%;
   height: 80px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.buttons {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  width: 180px;
+  max-width: 400px;
+  background-color: #ffffff88;
+  backdrop-filter: blur(10px);
+  padding: 2px 4px;
+  border-radius: 24px;
+}
+
+.button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 60px;
+  height: 40px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.button:hover {
   background-color: white;
 }
 </style>
