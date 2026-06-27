@@ -43,7 +43,7 @@ func GetUserName(c *echo.Context) (string, error) {
 		return "", echo.NewHTTPError(http.StatusUnauthorized, "Unauthorized: User header missing")
 	}
 
-	val := (*c).Get("userName")
+	val := c.Get("userName")
 	userName, ok := val.(string)
 	if !ok {
 		return "", echo.NewHTTPError(http.StatusUnauthorized, "Unauthorized: User header missing")
