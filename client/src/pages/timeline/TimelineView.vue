@@ -4,6 +4,6 @@ import TimelineItem from './TimelineItem.vue'
 </script>
 
 <template>
-  <TimelineItem v-for="num in 100" :key="num" />
+  <TimelineItem v-for="num in 100" :key="num" :num="num" />
   <BottomNav />
 </template>
