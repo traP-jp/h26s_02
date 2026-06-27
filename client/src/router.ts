@@ -12,7 +12,7 @@ const routes: RouteRecordRaw[] = [
     name: 'Timeline',
     component: () => import('@/pages/timeline/TimelineView.vue'),
   },
-   {
+  {
     path: '/camera',
     name: 'Camera',
     component: () => import('@/pages/camera/CameraView.vue'),

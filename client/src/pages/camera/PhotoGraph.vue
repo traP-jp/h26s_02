@@ -151,18 +151,13 @@ onBeforeUnmount(stopCamera)
       <!-- <h2>カメラ映像のテスト</h2> -->
 
       <div class="video-cropper">
-        <video
-          ref="videoRef"
-          autoplay
-          playsinline
-          class="camera-video"
-        ></video>
+        <video ref="videoRef" autoplay playsinline class="camera-video"></video>
       </div>
 
       <div class="button-area">
-        <button 
+        <button
           :disabled="!isCameraActive || isSwitching"
-          :class="['iphone-shutter-button', { 'is-pressing': isPressing }]" 
+          :class="['iphone-shutter-button', { 'is-pressing': isPressing }]"
           @mousedown="startPress"
           @mouseup="endPress"
           @mouseleave="endPress"
@@ -177,7 +172,6 @@ onBeforeUnmount(stopCamera)
       </div>
     </div>
   </div>
-
 </template>
 
 <style scoped>
@@ -199,9 +193,7 @@ onBeforeUnmount(stopCamera)
   align-items: center;
   gap: 1rem;
   width: 100%;
-  
 }
-
 
 .camera-container h2 {
   color: #ffffff;
@@ -210,7 +202,7 @@ onBeforeUnmount(stopCamera)
 
 .camera-video {
   background-color: #000;
-  border-radius: 0; 
+  border-radius: 0;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   width: 100%;
   height: auto;
@@ -236,16 +228,19 @@ onBeforeUnmount(stopCamera)
   border-radius: 50%;
   cursor: pointer;
   z-index: 10;
-  
+
   background-color: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  
+
   display: flex;
   align-items: center;
   justify-content: center;
-  
-  transition: background-color 0.25s ease, transform 0.2s ease, opacity 0.3s ease;
+
+  transition:
+    background-color 0.25s ease,
+    transform 0.2s ease,
+    opacity 0.3s ease;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
@@ -307,10 +302,10 @@ onBeforeUnmount(stopCamera)
   cursor: pointer;
   outline: none;
   box-shadow: 0 0 0 2px #000000 inset;
-  
+
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
-  
+
   transition: transform 0.08s ease-out;
   appearance: none;
   -webkit-appearance: none;
@@ -326,11 +321,14 @@ onBeforeUnmount(stopCamera)
   background-color: #ffffff;
   border-radius: 50%;
   transform: translate(-50%, -50%);
-  transition: width 0.08s ease-out, height 0.08s ease-out, background-color 0.08s ease-out;
+  transition:
+    width 0.08s ease-out,
+    height 0.08s ease-out,
+    background-color 0.08s ease-out;
 }
 
 .iphone-shutter-button.is-pressing {
-  transform: scale(0.9); 
+  transform: scale(0.9);
 }
 
 .iphone-shutter-button.is-pressing::after {
@@ -354,20 +352,19 @@ onBeforeUnmount(stopCamera)
 }
 
 .back-button {
-  position: absolute; 
-  top: 20px;        
-  left: 20px;       
+  position: absolute;
+  top: 20px;
+  left: 20px;
 
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 10px 16px;
-  background-color: rgba(0, 0, 0, 0.6); 
+  background-color: rgba(0, 0, 0, 0.6);
   color: white;
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 20px;
   cursor: pointer;
   font-size: 14px;
 }
-
 </style>
