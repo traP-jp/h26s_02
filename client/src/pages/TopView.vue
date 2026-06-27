@@ -1,1 +1,3 @@
-<template>Top</template>
+<template>
+  <RouterLink to="/samples">Samples</RouterLink>
+</template>
