@@ -47,10 +47,29 @@
       <canvas ref="canvasRef"></canvas>
     </div>
   </div>
+
+  <MotionView @update-blur-time="onBlurUpdate" />
+
 </template>
+
+
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import MotionView from './MotionView.vue'
+
+const onBlurUpdate = (value: number) => {
+  blurTime.value = value
+  drawCanvas()
+}
+
+const resetBlur = () => {
+  blurTime.value = 0
+  drawCanvas()
+}
+
+const MAX_BLUR_TIME = 2000
+
 
 // テンプレート参照の型定義
 const canvasRef = ref<HTMLCanvasElement | null>(null)
@@ -60,6 +79,7 @@ const imageLoaded = ref<boolean>(false)
 const blurStrength = ref<number>(0.5)
 const centerX = ref<number>(0.5)
 const centerY = ref<number>(0.5)
+const blurTime = ref<number>(0)
 
 // 画像オブジェクトを保持
 let sourceImage: HTMLImageElement | null = null
@@ -91,6 +111,7 @@ const handleImageUpload = (event: Event) => {
       if (!sourceImage) return // TypeScriptのNullチェック
       console.log(`[RadialBlur] 画像デコード完了: ${sourceImage.width}x${sourceImage.height}px`)
       imageLoaded.value = true
+      resetBlur()
       drawCanvas()
     }
 
@@ -136,6 +157,7 @@ const drawCanvas = () => {
   // 【ここが重要】画面を明るくするために 'screen' を使用
   // ctx.globalCompositeOperation = 'screen'
 
+  const strength = Math.min(blurTime.value / MAX_BLUR_TIME / 2, 1)
   const passes = 60
   const originX: number = canvas.width * centerX.value
   const originY: number = canvas.height * centerY.value
@@ -145,7 +167,7 @@ const drawCanvas = () => {
   ctx.globalAlpha = (1.0 / passes) * 3
 
   for (let i = 0; i < passes; i++) {
-    const scale = 1 + blurStrength.value * (i / passes)
+    const scale = 1 + strength * (i / passes)
 
     ctx.save()
     ctx.translate(originX, originY)

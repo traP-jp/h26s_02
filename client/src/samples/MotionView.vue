@@ -22,6 +22,10 @@
 <script setup lang="ts">
 import { ref, onUnmounted } from 'vue'
 
+const emit = defineEmits<{
+  'update-blur-time': [blurTime: number]
+}>()
+
 const isPermissionGranted = ref(false)
 const isShaking = ref(false)
 const debugLogs = ref<string[]>([])
@@ -34,10 +38,13 @@ const soundUrl = '/sound.mp3'
 let audio: HTMLAudioElement | null = null
 
 const SHAKE_THRESHOLD = 1500
+const BLUR_THRESHOLD = 3000
+let blurTime = 0
 let lastX = 0,
   lastY = 0,
   lastZ = 0
 let lastUpdate = 0
+
 
 const handleMotion = (event: DeviceMotionEvent) => {
   if (isShaking.value) return
@@ -63,6 +70,18 @@ const handleMotion = (event: DeviceMotionEvent) => {
       }, 500)
     }
 
+    const isStrongShake = speed > BLUR_THRESHOLD
+
+    if (isStrongShake) {
+      addLog(`[Motion] 強いシェイクの検知: Blur Time ${blurTime} ms`)
+
+      blurTime += diffTime
+    }
+
+    blurTime = Math.min(blurTime, 3000)
+
+    emit('update-blur-time', blurTime)
+
     lastX = current.x
     lastY = current.y
     lastZ = current.z
@@ -87,7 +106,9 @@ const requestAccess = async () => {
 
   try {
     audio = new Audio(soundUrl)
-    await audio.play().catch()
+    audio.play().catch((e) => {
+      addLog(`[Audio Init Error] ${String(e)}`)
+    })
     audio.pause()
     audio.currentTime = 0
     addLog('[Init] 音声の初期化完了')
