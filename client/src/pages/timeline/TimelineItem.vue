@@ -11,7 +11,7 @@ defineProps<{
 <template>
   <div class="tl-item">
     <div class="tl-item-header">
-      <UserIcon user-id="kitsne" :size="24" />
+      <UserIcon user-id="kitsne" :size="32" />
       <div class="tl-item-userid">kitsne</div>
     </div>
     <PostImage :num="num" />
@@ -39,13 +39,11 @@ defineProps<{
 }
 
 .tl-item-userid {
-  font-size: 0.8rem;
   font-weight: bold;
 }
 
 .tl-item-hash {
   margin-top: 4px;
-  font-size: 0.8rem;
   color: #ff8400;
 }
 
