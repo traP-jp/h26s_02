@@ -1,6 +1,6 @@
 <template>
   <div class="radial-blur-container">
-    <!-- <div class="controls">
+    <div class="controls">
       <div v-if="imageLoaded" class="sliders">
         <label class="slider-label">
           ぼかしの強さ (ブレ幅):
@@ -39,7 +39,7 @@
           {{ Math.round(centerY * 100) }}%
         </label>
       </div>
-    </div> -->
+    </div>
 
     <div v-show="imageLoaded" class="canvas-wrapper">
       <canvas ref="canvasRef"></canvas>
