@@ -52,8 +52,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import MotionView from './MotionView.vue'
+
+const router = useRouter()
 
 const onBlurUpdate = (value: number) => {
   blurTime.value = value
@@ -81,46 +84,17 @@ const blurTime = ref<number>(0)
 let sourceImage: HTMLImageElement | null = null
 
 const handleImageUpload = (event: Event) => {
-  // input要素とファイルオブジェクトの型キャスト
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
 
-  if (!file) {
-    console.warn('[RadialBlur] ファイルが選択されませんでした。')
-    return
-  }
-
-  console.log(`[RadialBlur] 画像読み込み開始: ${file.name}`)
-
-  if (!file.type.startsWith('image/')) {
-    console.error('[RadialBlur] エラー: 画像以外のファイル形式です。')
-    alert('画像ファイルを選択してください。')
-    return
-  }
+  if (!file) return
 
   const reader = new FileReader()
-
-  reader.onload = (e: ProgressEvent<FileReader>) => {
-    sourceImage = new Image()
-
-    sourceImage.onload = () => {
-      if (!sourceImage) return // TypeScriptのNullチェック
-      console.log(`[RadialBlur] 画像デコード完了: ${sourceImage.width}x${sourceImage.height}px`)
-      imageLoaded.value = true
-      resetBlur()
-      drawCanvas()
-    }
-
-    sourceImage.onerror = (err) => {
-      console.error('[RadialBlur] 画像のデコードに失敗しました:', err)
-    }
-
-    // onload時のresultの型チェックと代入
+  reader.onload = (e) => {
     if (e.target?.result && typeof e.target.result === 'string') {
-      sourceImage.src = e.target.result
+      loadImageFromDataUrl(e.target.result)
     }
   }
-
   reader.readAsDataURL(file)
 }
 
@@ -174,6 +148,36 @@ const drawCanvas = () => {
   }
 
   ctx.globalAlpha = 1.0
+}
+
+onMounted(async () => {
+  const state = history.state as { capturedImage?: string }
+
+  if (state.capturedImage) {
+    console.log('[RadialBlur] 撮影された写真を自動読込します。')
+    loadImageFromDataUrl(state.capturedImage)
+  } else {
+    console.warn('[RadialBlur] 撮影データが見つかりません。カメラ画面に戻ります。')
+    await router.push('/camera')
+  }
+})
+
+const loadImageFromDataUrl = (dataUrl: string) => {
+  sourceImage = new Image()
+
+  sourceImage.onload = () => {
+    if (!sourceImage) return
+    console.log(`[RadialBlur] 写真のデコード完了: ${sourceImage.width}x${sourceImage.height}px`)
+    imageLoaded.value = true
+    resetBlur()
+    drawCanvas()
+  }
+
+  sourceImage.onerror = (err) => {
+    console.error('[RadialBlur] 写真のデコードに失敗しました:', err)
+  }
+
+  sourceImage.src = dataUrl
 }
 </script>
 
