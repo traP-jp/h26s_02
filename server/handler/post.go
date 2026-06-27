@@ -8,9 +8,11 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v5"
+	"github.com/traP-jp/h26s_02/domain"
 	"github.com/traP-jp/h26s_02/repository"
 	"github.com/traP-jp/h26s_02/storage"
 
@@ -19,23 +21,58 @@ import (
 )
 
 type Post struct {
-	db             repository.DB
-	postRepository repository.Post
-	tagRepository  repository.Tag
-	imageStorage   storage.Image
+	db                 repository.DB
+	postRepository     repository.Post
+	reactionRepository repository.Reaction
+	tagRepository      repository.Tag
+	imageStorage       storage.Image
 }
 
-func NewPost(db repository.DB, postRepository repository.Post, tagRepository repository.Tag, imageStorage storage.Image) *Post {
+func NewPost(db repository.DB, postRepository repository.Post, reactionRepository repository.Reaction, tagRepository repository.Tag, imageStorage storage.Image) *Post {
 	return &Post{
-		db:             db,
-		postRepository: postRepository,
-		tagRepository:  tagRepository,
-		imageStorage:   imageStorage,
+		db:                 db,
+		postRepository:     postRepository,
+		tagRepository:      tagRepository,
+		reactionRepository: reactionRepository,
+		imageStorage:       imageStorage,
 	}
 }
 
 type PostPostResponse struct {
 	ID uuid.UUID `json:"id"`
+}
+
+func (h *Post) GetPost(c *echo.Context) error {
+
+	postID, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid post ID")
+	}
+	post, err := h.postRepository.GetPost(c.Request().Context(), postID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid post ID")
+	}
+	reactions, err := h.reactionRepository.GetReactionCount(c.Request().Context(), postID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid post ID")
+	}
+	tags, err := h.tagRepository.GetPostTags(c.Request().Context(), postID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid post ID")
+	}
+	return c.JSON(http.StatusOK, struct {
+		ID        uuid.UUID               `json:"id"`
+		UserName  string                  `json:"user_name"`
+		CreatedAt time.Time               `json:"created_at"`
+		Reactions []*domain.ReactionCount `json:"reactions"`
+		Tags      []string                `json:"tags"`
+	}{
+		ID:        post.GetID(),
+		UserName:  post.GetUserName(),
+		CreatedAt: post.GetCreatedAt(),
+		Reactions: reactions,
+		Tags:      tags,
+	})
 }
 
 func (p *Post) PostPost(c *echo.Context) error {
