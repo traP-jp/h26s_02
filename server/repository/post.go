@@ -1,5 +1,11 @@
 package repository
 
+import (
+	"context"
+
+	"github.com/google/uuid"
+)
+
 type Post interface {
-	// TODO
+	CreatePost(ctx context.Context, id uuid.UUID, userName string) error
 }
