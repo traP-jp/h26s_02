@@ -46,17 +46,17 @@ type PostPostResponse struct {
 	ID uuid.UUID `json:"id"`
 }
 
-func (h *Post) GetPost(c *echo.Context) error {
+func (p *Post) GetPost(c *echo.Context) error {
 
 	postID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid post ID")
 	}
-	post, err := h.postRepository.GetPost(c.Request().Context(), postID)
+	post, err := p.postRepository.GetPost(c.Request().Context(), postID)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid post ID")
 	}
-	reactions, err := h.reactionRepository.GetReactionCount(c.Request().Context(), postID)
+	reactions, err := p.reactionRepository.GetReactionCount(c.Request().Context(), postID)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid post ID")
 	}
@@ -67,7 +67,7 @@ func (h *Post) GetPost(c *echo.Context) error {
 			Count: reaction.GetCount(),
 		})
 	}
-	tags, err := h.tagRepository.GetPostTags(c.Request().Context(), postID)
+	tags, err := p.tagRepository.GetPostTags(c.Request().Context(), postID)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid post ID")
 	}
