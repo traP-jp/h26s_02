@@ -12,7 +12,7 @@ const routes: RouteRecordRaw[] = [
     name: 'Timeline',
     component: () => import('@/pages/timeline/TimelineView.vue'),
   },
-   {
+  {
     path: '/camera',
     name: 'Camera',
     component: () => import('@/pages/camera/CameraView.vue'),
@@ -52,7 +52,6 @@ const routes: RouteRecordRaw[] = [
     name: 'Yakudo',
     component: () => import('@/samples/YakudoView.vue'),
   },
-
 ]
 
 const router = createRouter({

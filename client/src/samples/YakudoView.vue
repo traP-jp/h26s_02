@@ -49,17 +49,14 @@
   </div>
 
   <MotionView @update-blur-time="onBlurUpdate" />
-
 </template>
 
-
-
 <script setup lang="ts">
-import { ref, onMounted } from 'vue' 
-import { useRouter } from 'vue-router' 
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import MotionView from './MotionView.vue'
 
-const router = useRouter() 
+const router = useRouter()
 
 const onBlurUpdate = (value: number) => {
   blurTime.value = value
@@ -72,7 +69,6 @@ const resetBlur = () => {
 }
 
 const MAX_BLUR_TIME = 2000
-
 
 // テンプレート参照の型定義
 const canvasRef = ref<HTMLCanvasElement | null>(null)
@@ -157,12 +153,12 @@ const drawCanvas = () => {
 onMounted(() => {
   const state = history.state as { capturedImage?: string }
 
-  if (state && state.capturedImage) {
+  if (state?.capturedImage) {
     console.log('[RadialBlur] 撮影された写真を自動読込します。')
-    loadImageFromDataUrl(state.capturedImage) 
+    loadImageFromDataUrl(state.capturedImage)
   } else {
     console.warn('[RadialBlur] 撮影データが見つかりません。カメラ画面に戻ります。')
-    router.push('/camera') 
+    router.push('/camera')
   }
 })
 
@@ -172,9 +168,9 @@ const loadImageFromDataUrl = (dataUrl: string) => {
   sourceImage.onload = () => {
     if (!sourceImage) return
     console.log(`[RadialBlur] 写真のデコード完了: ${sourceImage.width}x${sourceImage.height}px`)
-    imageLoaded.value = true 
-    resetBlur()              
-    drawCanvas()            
+    imageLoaded.value = true
+    resetBlur()
+    drawCanvas()
   }
 
   sourceImage.onerror = (err) => {
