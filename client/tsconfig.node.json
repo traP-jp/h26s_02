@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+
+    // 環境と前提
+    "target": "ESNext",
+    "lib": ["ESNext"],
+    "types": ["node"],
+    "skipLibCheck": true,
+
+    // モジュール解決とバンドルの設定
+    "module": "ESNext",
+    "noEmit": true,
+    "moduleResolution": "bundler",
+    "moduleDetection": "force",
+
+    // 最低限の制約
+    "verbatimModuleSyntax": true, // 型としてのインポートを義務化
+    "noUncheckedSideEffectImports": true,
+    "strict": true,
+    "allowImportingTsExtensions": true
+  },
+  "include": ["vite.config.ts", "eslint.config.ts"]
+}

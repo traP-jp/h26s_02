@@ -1,0 +1,16 @@
+@import 'tailwindcss/preflight.css';
+/* Preflight でスタイルをハードリセット */
+
+:root {
+  font-size: 15px; /* 1rem */
+  --font-noto: 'M PLUS 1p', system-ui, sans-serif;
+  /* フォールバックは綺麗な system-ui、汎用 sans-serif の順 */
+}
+
+html {
+  overscroll-behavior: none;
+}
+
+body {
+  font-family: var(--font-noto);
+}
