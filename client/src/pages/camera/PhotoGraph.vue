@@ -89,7 +89,7 @@ const switchCamera = async () => {
   console.log('カメラの切り替え処理が完了しました。')
 }
 
-const captureAndNavigate = () => {
+const captureAndNavigate = async () => {
   console.log('キャプチャ処理を開始します。')
   const video = videoRef.value
 
@@ -113,8 +113,8 @@ const captureAndNavigate = () => {
 
     const dataUrl = canvas.toDataURL('image/png')
 
-    router.push({
-      path: '/camera/yakudo',
+    await router.push({
+      path: '/samples/yakudo',
       state: { capturedImage: dataUrl },
     })
 
@@ -137,8 +137,8 @@ onBeforeUnmount(stopCamera)
     <button
       :disabled="!isCameraActive || isSwitching"
       :class="['switch-button', { 'is-switching': isSwitching }]"
-      @click="switchCamera"
       aria-label="カメラ切り替え"
+      @click="switchCamera"
     >
       <span class="switch-icon"></span>
     </button>

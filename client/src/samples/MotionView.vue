@@ -45,7 +45,6 @@ let lastX = 0,
   lastZ = 0
 let lastUpdate = 0
 
-
 const handleMotion = (event: DeviceMotionEvent) => {
   if (isShaking.value) return
   const current = event.accelerationIncludingGravity

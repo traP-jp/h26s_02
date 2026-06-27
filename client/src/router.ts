@@ -28,7 +28,7 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/pages/grid/SearchView.vue'),
   },
   {
-    path: '/user',
+    path: '/user/:userId',
     name: 'User',
     component: () => import('@/pages/grid/UserView.vue'),
   },

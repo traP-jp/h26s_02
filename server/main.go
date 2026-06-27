@@ -25,7 +25,6 @@ func main() {
 	postHandler := handler.NewPost(dbDB, postRepository, tagRepository, s3Storage)
 
 	userHandler := handler.NewUser()
-
 	tagHandler := handler.NewTag(tagRepository)
 
 	h := handler.NewHandler(userHandler, postHandler, tagHandler)
