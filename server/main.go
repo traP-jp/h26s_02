@@ -22,7 +22,8 @@ func main() {
 
 	postRepository := db.NewPost(dbDB)
 	tagRepository := db.NewTag(dbDB)
-	postHandler := handler.NewPost(dbDB, postRepository, tagRepository, s3Storage)
+	reactionRepository := db.NewReaction(dbDB)
+	postHandler := handler.NewPost(dbDB, postRepository, reactionRepository, tagRepository, s3Storage)
 
 	userHandler := handler.NewUser()
 	tagHandler := handler.NewTag(tagRepository)
