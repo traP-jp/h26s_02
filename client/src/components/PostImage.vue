@@ -6,7 +6,7 @@ defineProps<{
 
 <template>
   <div class="image-wrapper">
-    <img :src="`/images/image ${(num % 10) + 1}.png`" class="post-image" />
+    <img :src="`/images/image ${(num % 10) + 1}.png`" class="post-image" loading="lazy" />
   </div>
 </template>
 
