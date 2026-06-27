@@ -1,11 +1,22 @@
 <script setup lang="ts">
 import PostImage from '@/components/PostImage.vue'
+import ScrollView from '@/samples/ScrollView.vue'
+import { ref } from 'vue'
+
+const posts = ref<number[]>(Array.from({length: 100}, (_, i) => i + 1))
+
 </script>
 
 <template>
-  <div class="grid">
-    <PostImage v-for="num in 100" :key="num" :num="num" />
-  </div>
+  <ScrollView>
+    <div class="grid">
+      <PostImage
+        v-for="num in posts"
+        :key="num"
+        :num="num"
+      />
+    </div>
+  </ScrollView>
 </template>
 
 <style scoped>
