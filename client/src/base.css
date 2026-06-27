@@ -7,6 +7,10 @@
   /* フォールバックは綺麗な system-ui、汎用 sans-serif の順 */
 }
 
+html {
+  overscroll-behavior: none;
+}
+
 body {
   font-family: var(--font-noto);
 }
