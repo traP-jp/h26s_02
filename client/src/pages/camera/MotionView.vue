@@ -1,7 +1,7 @@
 <template>
   <div class="shake-container">
     <div v-if="!isPermissionGranted" class="init-screen">
-      <button class="start-btn" @click="requestAccess">開始する</button>
+      <p>センサーを準備しています...</p>
     </div>
 
     <!-- <div v-else class="play-screen">
@@ -20,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 
 const emit = defineEmits<{
   'update-blur-time': [blurTime: number]
@@ -99,6 +99,11 @@ const playSound = () => {
     })
   }
 }
+
+onMounted(() => {
+  addLog('[Auto] ページが読み込まれたため、自動でセンサーを要求します')
+  requestAccess()
+})
 
 const requestAccess = async () => {
   addLog('[Init] ボタンが押されました')
