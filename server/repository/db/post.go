@@ -73,3 +73,12 @@ func (p *Post) GetPostByID(id string) (*domain.Post, error) {
 
 	return domain.NewPost(rec.ID, rec.UserName, rec.CreatedAt), nil
 }
+func (p *Post) GetPost(ctx context.Context, id uuid.UUID) (*domain.Post, error) {
+	var post posts
+	err := p.db.DB(ctx).GetContext(ctx, &post, "SELECT  id, user_name, created_at FROM posts WHERE id = ?", id)
+	if err != nil {
+		return nil, fmt.Errorf("get post: %w", err)
+	}
+
+	return domain.NewPost(post.UserName, post.ID, post.CreatedAt), nil
+}

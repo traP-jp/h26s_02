@@ -12,7 +12,7 @@ const routes: RouteRecordRaw[] = [
     name: 'Timeline',
     component: () => import('@/pages/timeline/TimelineView.vue'),
   },
-   {
+  {
     path: '/camera',
     name: 'Camera',
     component: () => import('@/pages/camera/CameraView.vue'),
@@ -23,7 +23,7 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/pages/grid/SearchView.vue'),
   },
   {
-    path: '/user',
+    path: '/user/:userId',
     name: 'User',
     component: () => import('@/pages/grid/UserView.vue'),
   },

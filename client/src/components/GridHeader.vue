@@ -2,6 +2,7 @@
 defineProps<{
   posts?: number
   reactions?: number
+  title: string
 }>()
 </script>
 
@@ -11,7 +12,7 @@ defineProps<{
       <slot />
     </div>
     <div>
-      <div class="header-title">kitsne</div>
+      <div class="header-title">{{ title }}</div>
       <div class="header-nums">
         <div>
           <span class="info-num">{{ posts ?? 0 }}</span>
