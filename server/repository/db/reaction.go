@@ -83,7 +83,7 @@ func (r *Reaction) DeleteReaction(ctx context.Context, postID uuid.UUID, userNam
 		return fmt.Errorf("delete reaction: %w", err)
 	}
 	if rowsAffected == 0 {
-		return errors.New("no record deleted")
+		return repository.ErrNoRecordDeleted
 	}
 
 	return nil

@@ -26,7 +26,7 @@ func (p *Post) PostReaction(c *echo.Context) error {
 	if err := c.Bind(&req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
 	}
-	if req.ID < 0 {
+	if req.ID <= 0 {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid reaction ID")
 	}
 
