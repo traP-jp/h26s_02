@@ -114,7 +114,7 @@ export const api = {
 
   postReaction: async (postId: string, reactionId: number) => {
     return (await fetchApi('POST', `/posts/${postId}/reactions`, {
-      body: { reactionId },
+      body: { id: reactionId },
     })) as Reaction[]
   },
 
