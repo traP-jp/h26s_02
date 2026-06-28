@@ -2,9 +2,9 @@
 import PostImage from '@/components/PostImage.vue'
 import UserIcon from '@/components/UserIcon.vue'
 import TimelineReaction from '@/pages/timeline/TimelineReaction.vue'
-import { type Post } from '@/schema'
+import { type Post, type Reaction } from '@/schema'
 import { useRouter } from 'vue-router'
-import { computed } from 'vue'
+import { onMounted, ref } from 'vue'
 
 const router = useRouter()
 
@@ -12,25 +12,13 @@ const props = defineProps<{
   post: Post
 }>()
 
-const reactions = computed(() => {
-  if (!props.post.reactions)
-    return {
-      1: { id: 1, count: 0, myReaction: false },
-      2: { id: 2, count: 0, myReaction: false },
-      3: { id: 3, count: 0, myReaction: false },
-    }
+const reactions = ref<Record<number, Reaction> | null>(null)
 
-  const r1 = props.post.reactions.find((r) => r.id === 1)
-  const r2 = props.post.reactions.find((r) => r.id === 2)
-  const r3 = props.post.reactions.find((r) => r.id === 3)
-
-  const result = {
-    1: { id: 1, count: r1 ? r1.count : 0, myReaction: false },
-    2: { id: 2, count: r2 ? r2.count : 0, myReaction: false },
-    3: { id: 3, count: r3 ? r3.count : 0, myReaction: false },
+onMounted(() => {
+  reactions.value = props.post.reactions
+  for (let i = 1; i <= 3; i++) {
+    reactions.value[i] ??= { id: i, count: 0, myReaction: false }
   }
-
-  return result
 })
 </script>
 
@@ -44,14 +32,14 @@ const reactions = computed(() => {
     <div class="tl-item-hash">
       <span v-for="tag in post.tags" :key="tag">#{{ tag }}</span>
     </div>
-    <div class="tl-item-reactions">
+    <div v-if="reactions" class="tl-item-reactions">
       <TimelineReaction
         v-for="id in [1, 2, 3]"
         :id="id"
         :key="id"
         :post-id="post.id"
-        :count="reactions[id].count"
-        :my-reaction="reactions[id].myReaction"
+        :count="reactions[id]!.count"
+        :my-reaction="reactions[id]!.myReaction"
         :is-active="true"
       />
     </div>
