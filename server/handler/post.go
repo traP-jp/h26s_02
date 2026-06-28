@@ -187,11 +187,11 @@ func (p *Post) DeleteReaction(c *echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid reaction ID")
 	}
 	err = p.reactionRepository.DeleteReaction(c.Request().Context(), postID, userName, deleteReactionID)
-	if err != nil {
+	if errors.Is(err, repository.ErrNoRecordDeleted) {
+		return echo.NewHTTPError(http.StatusNotFound, "reaction not found")
+	} else if err != nil {
 		log.Printf("failed to delete reaction: %v\n", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
-	} else if errors.Is(err, repository.ErrNoRecordDeleted) {
-		return echo.NewHTTPError(http.StatusNotFound, "reaction not found")
 	}
 	return c.NoContent(http.StatusOK)
 }
