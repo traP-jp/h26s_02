@@ -44,6 +44,7 @@ const reactions = computed(() => {
         v-for="id in [1, 2, 3]"
         :id="id"
         :key="id"
+        :post-id="post.id"
         :count="reactions[id].count"
         :is-active="true"
       />

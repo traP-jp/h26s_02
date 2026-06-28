@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import MSIcon from '@/components/MSIcon.vue'
+import { api } from '@/schema'
 
 const props = defineProps<{
+  postId: string
   id: number
   count: number
-  isActive: boolean
+  myReaction: boolean
 }>()
 
 type ReactionInfo = {
@@ -13,6 +15,13 @@ type ReactionInfo = {
   iconName: string
   color: string
 }
+
+// 私がそのリアクションを押しているかどうか
+const isMyReaction = ref(props.myReaction)
+const reactionCount = computed(() => {
+  const reactionCountByOthers = props.count - (props.myReaction ? 1 : 0)
+  return reactionCountByOthers + (isMyReaction.value ? 1 : 0)
+})
 
 const reactionInfoList: Record<number, ReactionInfo> = {
   1: { id: 1, iconName: 'thumb-up', color: '#27C200' },
@@ -27,19 +36,30 @@ const reactionInfo = computed(() => {
 })
 
 const iconNameOutline = computed(() =>
-  props.isActive ? reactionInfo.value.iconName : `${reactionInfo.value.iconName}-outline`
+  isMyReaction.value ? reactionInfo.value.iconName : `${reactionInfo.value.iconName}-outline`
 )
+
+const toggleReaction = async () => {
+  if (isMyReaction.value) {
+    await api.deleteReaction(props.postId, props.id)
+    isMyReaction.value = false
+  } else {
+    await api.postReaction(props.postId, props.id)
+    isMyReaction.value = true
+  }
+}
 </script>
 
 <template>
   <div
     class="tl-item-reaction"
     :style="{
-      color: isActive ? reactionInfo.color : '#aaaaaa',
+      color: isMyReaction ? reactionInfo.color : '#aaaaaa',
     }"
+    @click="toggleReaction"
   >
     <MSIcon :name="iconNameOutline" class="reaction-icon" :size="24" />
-    <span class="tl-item-reaction-count">{{ count }}</span>
+    <span class="tl-item-reaction-count">{{ reactionCount }}</span>
   </div>
 </template>
 
@@ -48,6 +68,12 @@ const iconNameOutline = computed(() =>
   display: flex;
   align-items: center;
   gap: 0.3rem;
+  padding-right: 0.1rem;
+  cursor: pointer;
+}
+
+.tl-item-reaction:hover {
+  opacity: 0.8;
 }
 
 .tl-item-reaction-count {
