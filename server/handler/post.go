@@ -72,7 +72,7 @@ func (p *Post) GetPost(c *echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid post ID")
 	}
 
-	imageURL, err := h.imageStorage.GetTemporalyURL(c.Request().Context(), postID.String())
+	imageURL, err := p.imageStorage.GetTemporalyURL(c.Request().Context(), postID.String())
 	if errors.Is(err, storage.ErrImageNotFound) {
 		return echo.NewHTTPError(http.StatusNotFound, "image not found")
 	}
