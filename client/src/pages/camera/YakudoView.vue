@@ -231,7 +231,7 @@ canvas {
   font-size: 16px;
   font-weight: bold;
   color: #ffffff;
-  background-color: #3182ce;
+  background-color: #0071da;
   border: none;
   border-radius: 30px;
   cursor: pointer;
@@ -240,11 +240,6 @@ canvas {
 }
 
 .dummy-post-btn:hover {
-  background-color: #2b6cb0;
-  transform: translateY(-1px);
-}
-
-.dummy-post-btn:active {
-  transform: translateY(1px);
+  background-color: #00448c;
 }
 </style>
