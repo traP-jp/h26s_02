@@ -8,7 +8,7 @@ const isSearching = ref(false)
 <template>
   <div class="navigation">
     <div class="buttons">
-      <RouterLink to="/timeline" class="button">
+      <RouterLink to="/" class="button">
         <MSIcon name="home-outline" :size="24" />
       </RouterLink>
       <RouterLink to="/camera" class="button">
