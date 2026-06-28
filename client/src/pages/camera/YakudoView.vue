@@ -6,12 +6,16 @@
   </div>
 
   <MotionView @update-blur-time="onBlurUpdate" @update-acceleration="onAccelerationUpdate" />
+  <div class="action-area">
+    <button class="dummy-post-btn" @click="handlePost">POST</button>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import MotionView from '@/pages/camera/MotionView.vue'
+import { api } from '@/schema'
 
 const router = useRouter()
 
@@ -147,6 +151,21 @@ const loadImageFromDataUrl = (dataUrl: string) => {
   }
 
   sourceImage.src = dataUrl
+}
+
+const handlePost = async () => {
+  if (!canvasRef.value) return
+  const blob = await new Promise<Blob | null>((resolve) => {
+    canvasRef.value!.toBlob(resolve, 'image/png')
+  })
+  if (!blob) throw new Error('Canvas から Blob の生成に失敗しました。')
+
+  // 取得したBlobからFileを作成し、APIに送信します
+  const imageFile = new File([blob], 'image.png', { type: 'image/png' })
+  const tags = ['sample', `tag`]
+
+  await api.newPost({ image: imageFile, tags: tags })
+  await router.push('/timeline')
 }
 </script>
 
