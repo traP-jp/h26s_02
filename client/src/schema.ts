@@ -95,6 +95,7 @@ export const api = {
     return (await fetchApi('POST', '/posts', { body: formData })) as { id: string } // UUID
   },
 
+  // before は UUID
   getPosts: async (before?: string, limit?: number) => {
     return (await fetchApi('GET', '/posts', {
       queryParams: {

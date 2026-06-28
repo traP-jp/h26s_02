@@ -1,77 +1,72 @@
 <script setup lang="ts">
-
-import { ref, nextTick } from 'vue'
+import { ref, nextTick, onMounted } from 'vue'
 import { useInfiniteScroll } from '@vueuse/core'
 import BottomNav from '@/components/BottomNav.vue'
 import TimelineItem from './TimelineItem.vue'
 
-interface Post {
-  id: number
-}
+import { api, type Post } from '@/schema'
 
 const el = ref<HTMLElement | null>(null)
-
-const items = ref<Post[]>([{ id: 101 }, { id: 102 }, { id: 103 }, { id: 104 }, { id: 105 }])
+const posts = ref<Post[]>([])
 
 const isLoadingTop = ref<boolean>(false)
 const isLoadingBottom = ref<boolean>(false)
 
+onMounted(async () => {
+  await api.getPosts(undefined, 20)
+})
+
+// 上スクロール → 最新の投稿を取得してマージ
 useInfiniteScroll(
   el,
-  () => {
+  async () => {
     if (isLoadingTop.value) return
     isLoadingTop.value = true
-
-    // 読み込みに 1 秒かかる想定
-    setTimeout(async () => {
+    try {
       const previousScrollHeight = el.value?.scrollHeight ?? 0
+      const latestPosts = await api.getPosts(undefined, 20)
+      const existingIds = new Set(posts.value.map((item) => item.id))
+      const newPosts = latestPosts.filter((post) => !existingIds.has(post.id))
 
-      const first = items.value[0]
-      if (first) {
-        const prev: Post[] = [
-          { id: first.id - 5 },
-          { id: first.id - 4 },
-          { id: first.id - 3 },
-          { id: first.id - 2 },
-          { id: first.id - 1 },
-        ]
-        items.value.unshift(...prev)
-      }
+      if (newPosts.length > 0) {
+        posts.value.unshift(...newPosts) // 先頭に新着投稿を追加
 
-      // スクロール位置を修正
-      await nextTick()
-      if (el.value) {
-        const currentScrollHeight = el.value.scrollHeight
-        el.value.scrollTop += currentScrollHeight - previousScrollHeight
+        // スクロール位置を補正
+        await nextTick()
+        if (el.value) {
+          const currentScrollHeight = el.value.scrollHeight
+          el.value.scrollTop += currentScrollHeight - previousScrollHeight
+        }
       }
+    } catch (error) {
+      console.error('[Timeline] 最新の投稿の取得・マージエラー:', error)
+    } finally {
       isLoadingTop.value = false
-    }, 1000)
+    }
   },
   { direction: 'top', distance: 100 }
 )
 
+// 下スクロール → 過去の投稿を取得
 useInfiniteScroll(
   el,
-  () => {
+  async () => {
     if (isLoadingBottom.value) return
     isLoadingBottom.value = true
-
-    // 読み込みに 1 秒かかる想定
-    setTimeout(async () => {
-      const last = items.value[items.value.length - 1]
+    try {
+      const last = posts.value[posts.value.length - 1]
       if (last) {
-        const next: Post[] = [
-          { id: last.id + 1 },
-          { id: last.id + 2 },
-          { id: last.id + 3 },
-          { id: last.id + 4 },
-          { id: last.id + 5 },
-        ]
-        items.value.push(...next)
+        const prevPosts = await api.getPosts(last.id, 20)
+        if (prevPosts.length > 0) {
+          posts.value.push(...prevPosts)
+          await nextTick()
+        }
       }
-      await nextTick()
+    } catch (error) {
+      console.error('[Timeline] 過去の投稿の取得エラー:', error)
+    } finally {
       isLoadingBottom.value = false
-    }, 1000)
+    }
   },
   { direction: 'bottom', distance: 100 }
 )
@@ -79,7 +74,7 @@ useInfiniteScroll(
 
 <template>
   <div ref="el" class="timeline-container">
-    <TimelineItem v-for="item in items" :key="item.id" :num="item.id" />
+    <TimelineItem v-for="post in posts" :key="post.id" :post="post" />
   </div>
   <BottomNav />
 </template>

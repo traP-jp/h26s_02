@@ -8,14 +8,10 @@
       <p>スマホを振ってみてください！</p>
       <div class="device-icon" :class="{ shaking: isShaking }">［スマートフォン］</div>
     </div> -->
-
+    <!--
     <div v-show="imageLoaded" class="canvas-wrapper">
       <canvas ref="canvasRef"></canvas>
-    </div>
-
-    <div class="action-area">
-      <button class="dummy-post-btn" @click="handleDummyPost">POST</button>
-    </div>
+    </div> -->
   </div>
 </template>
 
@@ -158,11 +154,6 @@ onUnmounted(() => {
     window.removeEventListener('devicemotion', handleMotion, false)
   }
 })
-
-const handleDummyPost = () => {
-  console.log('[Dummy Post] ボタンがクリックされました。現在のぼかし時間:', blurTime.value)
-  alert(`画像をPOSTしました！（ダミー処理 / blurTime: ${blurTime.value}ms）`)
-}
 </script>
 
 <style scoped>
@@ -174,6 +165,7 @@ const handleDummyPost = () => {
   text-align: center;
   font-family: sans-serif;
   padding: 20px;
+  border: 1px solid red;
 }
 
 .start-btn {

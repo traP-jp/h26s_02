@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { type Post } from '@/schema'
 
 defineProps<{
-  num: number
+  post: Post
 }>()
 
 const isZoomed = ref<boolean>(false)
@@ -14,12 +15,12 @@ const toggleZoom = (): void => {
 
 <template>
   <div class="image-wrapper" @click="toggleZoom">
-    <img :src="`/images/image ${(num % 10) + 1}.png`" class="post-image" loading="lazy" />
+    <img :src="post.imageUrl" class="post-image" loading="lazy" />
 
     <Teleport to="body">
       <Transition name="fade">
         <div v-if="isZoomed" class="modal-overlay" @click="toggleZoom">
-          <img :src="`/images/image ${(num % 10) + 1}.png`" class="modal-image" />
+          <img :src="post.imageUrl" class="modal-image" />
         </div>
       </Transition>
     </Teleport>
