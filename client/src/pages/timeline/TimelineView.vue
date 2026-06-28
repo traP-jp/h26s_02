@@ -77,8 +77,15 @@ useInfiniteScroll(
 </script>
 
 <template>
-  <div ref="el">
+  <div ref="el" class="timeline-container">
     <TimelineItem v-for="item in items" :key="item.id" :num="item.id" />
   </div>
   <BottomNav />
 </template>
+
+<style scoped>
+.timeline-container {
+  height: 100vh;
+  overflow-y: auto;
+}
+</style>
