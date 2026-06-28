@@ -30,7 +30,9 @@ onMounted(() => {
     </div>
     <PostImage :post="post" />
     <div class="tl-item-hash">
-      <span v-for="tag in post.tags" :key="tag">#{{ tag }}</span>
+      <RouterLink v-for="tag in post.tags" :key="tag" :to="`/search?tag=${tag}`">
+        #{{ tag }}
+      </RouterLink>
     </div>
     <div v-if="reactions" class="tl-item-reactions">
       <TimelineReaction
