@@ -165,7 +165,7 @@ const handlePost = async () => {
   const tags = ['sample', `tag`]
 
   await api.newPost({ image: imageFile, tags: tags })
-  await router.push('/timeline')
+  await router.push('/')
 }
 </script>
 
