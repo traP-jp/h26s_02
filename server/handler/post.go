@@ -3,10 +3,12 @@ package handler
 import (
 	"context"
 	"errors"
+	"fmt"
 	"image"
 	"io"
 	"log"
 	"net/http"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -61,11 +63,28 @@ func (p *Post) GetPost(c *echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid post ID")
 	}
+
+	userName, err := GetUserName(c)
+	if err != nil {
+		return err
+	}
+	userReactions, err := p.reactionRepository.GetUserReactionsByPostIDs(c.Request().Context(), userName, []uuid.UUID{postID})
+	if err != nil {
+		log.Printf("failed to get user reactions: %v\n", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
+	}
+	postUserReactions, ok := userReactions[postID]
+	if !ok {
+		postUserReactions = []int{}
+	}
+
 	reactionCountResponses := make([]ReactionResponse, 0, len(reactions))
 	for _, reaction := range reactions {
+		myReaction := slices.Contains(postUserReactions, reaction.GetID())
 		reactionCountResponses = append(reactionCountResponses, ReactionResponse{
-			ID:    reaction.GetID(),
-			Count: reaction.GetCount(),
+			ID:         reaction.GetID(),
+			Count:      reaction.GetCount(),
+			MyReaction: myReaction,
 		})
 	}
 	tags, err := p.tagRepository.GetPostTags(c.Request().Context(), postID)
@@ -208,8 +227,9 @@ type GetPostsRequest struct {
 }
 
 type ReactionResponse struct {
-	ID    int `json:"id"`
-	Count int `json:"count"`
+	ID         int  `json:"id"`
+	Count      int  `json:"count"`
+	MyReaction bool `json:"myReaction"`
 }
 
 type PostResponse struct {
@@ -269,6 +289,16 @@ func (p *Post) GetPosts(c *echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
 	}
 
+	userName, err := GetUserName(c)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusUnauthorized, "unauthorized")
+	}
+	userReactions, err := p.reactionRepository.GetUserReactionsByPostIDs(ctx, userName, postIDs)
+	if err != nil {
+		log.Printf("failed to get user reactions: %v\n", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
+	}
+
 	response := make([]PostResponse, 0, len(posts))
 	for _, post := range posts {
 		postID := post.GetID()
@@ -281,9 +311,11 @@ func (p *Post) GetPosts(c *echo.Context) error {
 		var reactionRes []ReactionResponse
 		for _, r := range allReactions[postID] {
 			if r.GetCount() > 0 {
+				myReaction := slices.Contains(userReactions[postID], r.GetID())
 				reactionRes = append(reactionRes, ReactionResponse{
-					ID:    r.GetID(),
-					Count: r.GetCount(),
+					ID:         r.GetID(),
+					Count:      r.GetCount(),
+					MyReaction: myReaction,
 				})
 			}
 		}
@@ -337,6 +369,16 @@ func (p *Post) GetPostsByUser(c *echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get reactions")
 	}
 
+	loginUserName, err := GetUserName(c)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusUnauthorized, "unauthorized")
+	}
+	loginUserReactions, err := p.reactionRepository.GetUserReactionsByPostIDs(ctx, loginUserName, postIDs)
+	if err != nil {
+		log.Printf("failed to get user reactions: %v\n", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
+	}
+
 	response := make([]PostResponse, 0, len(posts))
 	for _, post := range posts {
 		postID := post.GetID()
@@ -349,9 +391,11 @@ func (p *Post) GetPostsByUser(c *echo.Context) error {
 		var reactionRes []ReactionResponse
 		for _, r := range allReactions[postID] {
 			if r.GetCount() > 0 {
+				myReaction := slices.Contains(loginUserReactions[postID], r.GetID())
 				reactionRes = append(reactionRes, ReactionResponse{
-					ID:    r.GetID(),
-					Count: r.GetCount(),
+					ID:         r.GetID(),
+					Count:      r.GetCount(),
+					MyReaction: myReaction,
 				})
 			}
 		}
@@ -393,7 +437,12 @@ func (p *Post) GetPostsByTags(c *echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
 	}
 
-	res, err := p.toPostResponses(ctx, posts)
+	userName, err := GetUserName(c)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusUnauthorized, "unauthorized")
+	}
+
+	res, err := p.toPostResponses(ctx, userName, posts)
 	if err != nil {
 		log.Printf("failed to construct post response: %v\n", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
@@ -402,7 +451,7 @@ func (p *Post) GetPostsByTags(c *echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-func (p *Post) toPostResponses(ctx context.Context, posts []*domain.Post) ([]PostResponse, error) {
+func (p *Post) toPostResponses(ctx context.Context, userName string, posts []*domain.Post) ([]PostResponse, error) {
 	if len(posts) == 0 {
 		return []PostResponse{}, nil
 	}
@@ -410,6 +459,11 @@ func (p *Post) toPostResponses(ctx context.Context, posts []*domain.Post) ([]Pos
 	postIDs := make([]uuid.UUID, len(posts))
 	for i, post := range posts {
 		postIDs[i] = post.GetID()
+	}
+
+	loginUserReactions, err := p.reactionRepository.GetUserReactionsByPostIDs(ctx, userName, postIDs)
+	if err != nil {
+		return nil, fmt.Errorf("get user reactions: %v", err)
 	}
 
 	response := make([]PostResponse, 0, len(posts))
@@ -426,12 +480,18 @@ func (p *Post) toPostResponses(ctx context.Context, posts []*domain.Post) ([]Pos
 			return nil, err
 		}
 
+		postUserReactions, ok := loginUserReactions[pid]
+		if !ok {
+			postUserReactions = []int{}
+		}
 		var reactionRes []ReactionResponse
 		for _, r := range allReactions {
 			if r.GetCount() > 0 {
+				myReaction := slices.Contains(postUserReactions, r.GetID())
 				reactionRes = append(reactionRes, ReactionResponse{
-					ID:    r.GetID(),
-					Count: r.GetCount(),
+					ID:         r.GetID(),
+					Count:      r.GetCount(),
+					MyReaction: myReaction,
 				})
 			}
 		}
