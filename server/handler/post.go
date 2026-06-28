@@ -389,34 +389,19 @@ func (p *Post) GetPostsByTags(c *echo.Context) error {
 
 	posts, err := p.postRepository.GetPostsByTags(ctx, tagNames)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "failed to fetch posts")
-	}
-	rawTags := c.QueryParams()["tags"]
-	if len(rawTags) == 0 {
-		return echo.NewHTTPError(http.StatusBadRequest, "tags required")
-	}
-
-	tagIDs := make([]uuid.UUID, len(rawTags))
-	for i, t := range rawTags {
-		id, err := uuid.Parse(t)
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, "invalid uuid format")
-		}
-		tagIDs[i] = id
-	}
-
-	posts, err = p.postRepository.GetPostsByTags(ctx, tagNames)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "failed to fetch posts")
+		log.Printf("failed to fetch posts by tags: %v\n", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
 	}
 
 	res, err := p.toPostResponses(ctx, posts)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "failed to build response")
+		log.Printf("failed to construct post response: %v\n", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
 	}
 
 	return c.JSON(http.StatusOK, res)
 }
+
 func (p *Post) toPostResponses(ctx context.Context, posts []*domain.Post) ([]PostResponse, error) {
 	if len(posts) == 0 {
 		return []PostResponse{}, nil

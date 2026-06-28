@@ -116,9 +116,15 @@ func (p *Post) GetPostsByTags(ctx context.Context, tagNames []string) ([]*domain
 		return nil, fmt.Errorf("build query: %w", err)
 	}
 
-	var posts []*domain.Post
+	var posts []*posts
 	if err := p.db.DB(ctx).SelectContext(ctx, &posts, query, args...); err != nil {
 		return nil, fmt.Errorf("select posts: %w", err)
 	}
-	return posts, nil
+
+	result := make([]*domain.Post, 0, len(posts))
+	for _, rec := range posts {
+		result = append(result, domain.NewPost(rec.ID, rec.UserName, rec.CreatedAt))
+	}
+
+	return result, nil
 }
