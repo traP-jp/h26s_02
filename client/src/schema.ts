@@ -96,9 +96,10 @@ export const api = {
   },
 
   // before は UUID
-  getPosts: async (before?: string, limit?: number) => {
+  getPosts: async (before?: string, limit?: number, tag?: string) => {
     return (await fetchApi('GET', '/posts', {
       queryParams: {
+        ...(tag ? { tag } : {}),
         ...(before ? { before } : {}),
         ...(limit ? { limit: limit.toString() } : {}),
       },
@@ -127,15 +128,16 @@ export const api = {
     return (await fetchApi('GET', '/tags')) as TagInfo[]
   },
 
-  getTaggedPosts: async (tag: string) => {
-    return (await fetchApi('GET', '/posts', { queryParams: { tag } })) as Post[]
-  },
-
   getMe: async () => {
     return (await fetchApi('GET', '/users/me')) as { userName: string }
   },
 
-  getUserPosts: async (userName: string) => {
-    return (await fetchApi('GET', `/users/${userName}/posts`)) as Post[]
+  getUserPosts: async (userName: string, before?: string, limit?: number) => {
+    return (await fetchApi('GET', `/users/${userName}/posts`, {
+      queryParams: {
+        ...(before ? { before } : {}),
+        ...(limit ? { limit: limit.toString() } : {}),
+      },
+    })) as Post[]
   },
 }

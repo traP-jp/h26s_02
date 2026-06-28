@@ -10,13 +10,13 @@ const route = useRoute()
 const userId = route.params['userId'] as string
 
 const loadNew = async (existingIds: Set<string>) => {
-  const latestPosts = await api.getPosts(undefined, 20)
+  const latestPosts = await api.getUserPosts(userId)
   const newPosts = latestPosts.filter((post) => !existingIds.has(post.id))
   return newPosts
 }
 
 const loadOld = async (lastId?: string) => {
-  return await api.getPosts(lastId, 20)
+  return await api.getUserPosts(userId, lastId)
 }
 </script>
 
