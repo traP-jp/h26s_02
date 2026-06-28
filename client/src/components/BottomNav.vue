@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import MSIcon from '@/components/MSIcon.vue'
 import SearchInput from '@/components/SearchInput.vue'
 const isSearching = ref(false)
 
-const nav = navigator as any
-const isMobile: boolean = nav.userAgentData.mobile
+const isMobile = ref(window.innerWidth <= 768)
+window.addEventListener('resize', () => {
+  console.log('window.innerWidth:', window.innerWidth)
+  isMobile.value = window.innerWidth <= 768
+})
 </script>
 
 <template>
@@ -42,7 +45,6 @@ const isMobile: boolean = nav.userAgentData.mobile
   display: flex;
   justify-content: space-around;
   align-items: center;
-  width: 180px;
   max-width: 400px;
   background-color: #ffffff88;
   backdrop-filter: blur(10px);
