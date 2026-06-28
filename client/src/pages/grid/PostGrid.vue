@@ -54,6 +54,7 @@ useInfiniteScroll(
 
 <style scoped>
 .grid {
+  margin-top: 120px;
   max-width: 800px;
   height: 100dvh;
   overflow-y: auto;
