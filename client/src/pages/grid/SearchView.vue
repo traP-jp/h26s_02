@@ -10,18 +10,14 @@ const route = useRoute()
 const tag = route.query['tag'] as string
 
 const loadNew = async (existingIds: Set<string>) => {
-  const latestPosts = await api.getPosts(undefined, undefined, tag)
+  const latestPosts = await api.getTagPosts(tag)
   const newPosts = latestPosts.filter((post) => !existingIds.has(post.id))
   return newPosts
-}
-
-const loadOld = async (lastId?: string) => {
-  return await api.getPosts(lastId, undefined, tag)
 }
 </script>
 
 <template>
-  <PostGrid :load-new="loadNew" :load-old="loadOld" />
+  <PostGrid :load-new="loadNew" />
   <GridHeader :posts="12" :reactions="30" :title="tag">
     <MSIcon name="tag" class="hash-tag" />
   </GridHeader>
