@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"errors"
+	"fmt"
 	"image"
 	"io"
 	"log"
@@ -436,7 +437,12 @@ func (p *Post) GetPostsByTags(c *echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
 	}
 
-	res, err := p.toPostResponses(ctx, posts)
+	userName, err := GetUserName(c)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusUnauthorized, "unauthorized")
+	}
+
+	res, err := p.toPostResponses(ctx, userName, posts)
 	if err != nil {
 		log.Printf("failed to construct post response: %v\n", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
@@ -445,7 +451,7 @@ func (p *Post) GetPostsByTags(c *echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-func (p *Post) toPostResponses(ctx context.Context, posts []*domain.Post) ([]PostResponse, error) {
+func (p *Post) toPostResponses(ctx context.Context, userName string, posts []*domain.Post) ([]PostResponse, error) {
 	if len(posts) == 0 {
 		return []PostResponse{}, nil
 	}
@@ -453,6 +459,11 @@ func (p *Post) toPostResponses(ctx context.Context, posts []*domain.Post) ([]Pos
 	postIDs := make([]uuid.UUID, len(posts))
 	for i, post := range posts {
 		postIDs[i] = post.GetID()
+	}
+
+	loginUserReactions, err := p.reactionRepository.GetUserReactionsByPostIDs(ctx, userName, postIDs)
+	if err != nil {
+		return nil, fmt.Errorf("get user reactions: %v", err)
 	}
 
 	response := make([]PostResponse, 0, len(posts))
@@ -469,12 +480,18 @@ func (p *Post) toPostResponses(ctx context.Context, posts []*domain.Post) ([]Pos
 			return nil, err
 		}
 
+		postUserReactions, ok := loginUserReactions[pid]
+		if !ok {
+			postUserReactions = []int{}
+		}
 		var reactionRes []ReactionResponse
 		for _, r := range allReactions {
 			if r.GetCount() > 0 {
+				myReaction := slices.Contains(postUserReactions, r.GetID())
 				reactionRes = append(reactionRes, ReactionResponse{
-					ID:    r.GetID(),
-					Count: r.GetCount(),
+					ID:         r.GetID(),
+					Count:      r.GetCount(),
+					MyReaction: myReaction,
 				})
 			}
 		}
