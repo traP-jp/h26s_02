@@ -3,6 +3,9 @@ import PostImage from '@/components/PostImage.vue'
 import UserIcon from '@/components/UserIcon.vue'
 import TimelineReaction from '@/pages/timeline/TimelineReaction.vue'
 import { type Post } from '@/schema'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 defineProps<{
   post: Post
@@ -11,9 +14,9 @@ defineProps<{
 
 <template>
   <div class="tl-item">
-    <div class="tl-item-header">
-      <UserIcon user-id="kitsne" :size="32" />
-      <div class="tl-item-userid">kitsne</div>
+    <div class="tl-item-header" @click="router.push(`/user/${post.userName}`)">
+      <UserIcon :user-id="post.userName" :size="32" />
+      <div class="tl-item-userid">{{ post.userName }}</div>
     </div>
     <PostImage :post="post" />
     <div class="tl-item-hash">
@@ -42,6 +45,7 @@ defineProps<{
   align-items: center;
   gap: 0.5rem;
   margin-bottom: 8px;
+  cursor: pointer;
 }
 
 .tl-item-userid {
