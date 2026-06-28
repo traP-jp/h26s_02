@@ -68,7 +68,7 @@ func (r *Reaction) GetReactionCount(ctx context.Context, postID uuid.UUID) ([]*d
 }
 
 func (r *Reaction) DeleteReaction(ctx context.Context, postID uuid.UUID, userName string, reactionID int) error {
-	_, err := r.db.DB(ctx).ExecContext(ctx,
+	result, err := r.db.DB(ctx).ExecContext(ctx,
 		"DELETE FROM post_reactions WHERE post_id = ? AND user_name = ? AND reaction_id = ?",
 		postID,
 		userName,
@@ -77,5 +77,13 @@ func (r *Reaction) DeleteReaction(ctx context.Context, postID uuid.UUID, userNam
 	if err != nil {
 		return fmt.Errorf("delete reaction: %w", err)
 	}
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("delete reaction: %w", err)
+	}
+	if rowsAffected == 0 {
+		return errors.New("no record deleted")
+	}
+
 	return nil
 }
