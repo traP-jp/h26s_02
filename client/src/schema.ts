@@ -65,7 +65,7 @@ export type Post = {
   userName: string // traQ ID
   tags: string[]
   imageUrl: string
-  reactions: Reaction[] | null
+  reactions: Reaction[]
   createdAt: string // ISO 8601
 }
 
