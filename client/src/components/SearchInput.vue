@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import MSIcon from './MSIcon.vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
 const searchQuery = ref('')
 const emit = defineEmits<{
   (e: 'close'): void
@@ -12,7 +16,7 @@ const executeSearch = () => {
   if (!query) return
 
   emit('search', query)
-  emit('close') // 仮
+  void router.push('/search?tag=' + encodeURIComponent(query))
 }
 </script>
 

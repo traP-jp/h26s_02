@@ -3,6 +3,9 @@ import { ref } from 'vue'
 import MSIcon from '@/components/MSIcon.vue'
 import SearchInput from '@/components/SearchInput.vue'
 const isSearching = ref(false)
+
+const nav = navigator as any
+const isMobile: boolean = nav.userAgentData.mobile
 </script>
 
 <template>
@@ -11,7 +14,7 @@ const isSearching = ref(false)
       <RouterLink to="/" class="button">
         <MSIcon name="home-outline" :size="24" />
       </RouterLink>
-      <RouterLink to="/camera" class="button">
+      <RouterLink v-if="isMobile" to="/camera" class="button">
         <MSIcon name="photo-camera-outline" :size="24" />
       </RouterLink>
       <div class="button" @click="isSearching = true">

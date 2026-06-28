@@ -54,6 +54,7 @@ const onUpdateRotationRate = (rate: number) => {
 const MAX_BLUR_TIME = 1000
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 const imageLoaded = ref<boolean>(false)
+
 const centerX = ref<number>(0.5)
 const centerY = ref<number>(0.5)
 const blurTime = ref<number>(0)

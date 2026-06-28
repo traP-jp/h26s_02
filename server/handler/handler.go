@@ -35,7 +35,7 @@ func (h *Handler) Start(e *echo.Echo) {
 
 	api.GET("/users/:id/posts", h.post.GetPostsByUser)
 
-	// api.GET("/posts", h.post.GetPosts)
+	api.GET("/tags/posts", h.post.GetPostsByTags)
 
 	api.GET("/posts", h.post.GetPosts)
 

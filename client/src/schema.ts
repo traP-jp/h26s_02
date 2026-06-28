@@ -52,6 +52,7 @@ const fetchApi = async (
 export type Reaction = {
   id: number // 暫定 5 以下
   count: number
+  myReaction: boolean
 }
 
 export type TagInfo = {
@@ -127,8 +128,12 @@ export const api = {
     return (await fetchApi('GET', '/tags')) as TagInfo[]
   },
 
-  getTaggedPosts: async (tag: string) => {
-    return (await fetchApi('GET', '/posts', { queryParams: { tag } })) as Post[]
+  getTagPosts: async (tag: string) => {
+    return (await fetchApi('GET', '/tags/posts', {
+      queryParams: {
+        ...(tag ? { tags: tag } : {}),
+      },
+    })) as Post[]
   },
 
   getMe: async () => {
@@ -136,6 +141,6 @@ export const api = {
   },
 
   getUserPosts: async (userName: string) => {
-    return (await fetchApi('GET', `/users/${userName}/posts`)) as Post[]
+    return (await fetchApi('GET', `/users/${userName}/posts`, {})) as Post[]
   },
 }
