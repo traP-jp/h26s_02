@@ -60,6 +60,7 @@
 - `reactions` リアクション。数が0のリアクションは配列に含まれない。リアクションが一つも無い場合は空配列
     - `id` リアクションのid (number)
     - `count` リアクション数
+    - `myReaction` 自身がリアクションしたかどうか
 - `createdAt` 投稿の作成日時
 
 ```json
@@ -74,7 +75,8 @@
         "reactions": [
             {
                 "id": 1,
-                "count": 10
+                "count": 10,
+                "myReaction": true
             }
         ],
         "createdAt": "2026-06-25T13:04:54.744Z"
@@ -99,6 +101,7 @@
 - `reactions` リアクション。数が0のリアクションは配列に含まれない。リアクションが一つも無い場合は空配列
     - `id` リアクションのid (number)
     - `count` リアクション数
+    - `myReaction` 自身がリアクションしたかどうか
 - `createdAt` 投稿の作成日時
 
 ```json
@@ -112,7 +115,8 @@
     "reactions": [
         {
             "id": 1,
-            "count": 10
+            "count": 10,
+            "myReaction": true
         }
     ],
     "createdAt": "2026-06-25T13:04:54.744Z"
@@ -154,6 +158,7 @@
     {
         "id": 1,
         "count": 10,
+        "myReaction": true
     }
 ]
 ```
