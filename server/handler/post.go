@@ -59,9 +59,9 @@ func (h *Post) GetPost(c *echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid post ID")
 	}
-	reactionCountResponses := make([]reactionCountResponse, 0, len(reactions))
+	reactionCountResponses := make([]ReactionResponse, 0, len(reactions))
 	for _, reaction := range reactions {
-		reactionCountResponses = append(reactionCountResponses, reactionCountResponse{
+		reactionCountResponses = append(reactionCountResponses, ReactionResponse{
 			ID:    reaction.GetID(),
 			Count: reaction.GetCount(),
 		})
@@ -70,18 +70,23 @@ func (h *Post) GetPost(c *echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid post ID")
 	}
-	return c.JSON(http.StatusOK, struct {
-		ID        uuid.UUID               `json:"id"`
-		UserName  string                  `json:"user_name"`
-		CreatedAt time.Time               `json:"created_at"`
-		Reactions []reactionCountResponse `json:"reactions"`
-		Tags      []string                `json:"tags"`
-	}{
+
+	imageURL, err := h.imageStorage.GetTemporalyURL(c.Request().Context(), postID.String())
+	if errors.Is(err, storage.ErrImageNotFound) {
+		return echo.NewHTTPError(http.StatusNotFound, "image not found")
+	}
+	if err != nil {
+		log.Printf("failed to get iamge temporaly url: %v\n", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
+	}
+
+	return c.JSON(http.StatusOK, PostResponse{
 		ID:        post.GetID(),
 		UserName:  post.GetUserName(),
 		CreatedAt: post.GetCreatedAt(),
 		Reactions: reactionCountResponses,
 		Tags:      tags,
+		ImageURL:  imageURL,
 	})
 }
 
@@ -255,11 +260,20 @@ func (p *Post) GetPosts(c *echo.Context) error {
 			}
 		}
 
+		imageURL, err := p.imageStorage.GetTemporalyURL(ctx, postID.String())
+		if errors.Is(err, storage.ErrImageNotFound) {
+			return echo.NewHTTPError(http.StatusNotFound, "image not found")
+		}
+		if err != nil {
+			log.Printf("failed to get iamge temporaly url: %v\n", err)
+			return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
+		}
+
 		response = append(response, PostResponse{
 			ID:        postID,
 			UserName:  post.GetUserName(),
 			Tags:      tagNames,
-			ImageURL:  "",
+			ImageURL:  imageURL,
 			Reactions: reactionRes,
 			CreatedAt: post.GetCreatedAt(),
 		})
