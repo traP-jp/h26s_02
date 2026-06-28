@@ -3,16 +3,20 @@
     <div v-if="!isPermissionGranted" class="init-screen">
       <p>センサーを準備しています...</p>
     </div>
+    <div v-else class="ready-screen">
+      <p>スマホを振ってください！</p>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 
-// 変更：update-acceleration も親へ送れるように定義を追加
+// ★変更：update-rotation-rate を emit できるように定義を追加
 const emit = defineEmits<{
   'update-blur-time': [blurTime: number]
   'update-acceleration': [accelX: number, accelY: number]
+  'update-rotation-rate': [rate: number]
 }>()
 
 const isPermissionGranted = ref(false)
@@ -27,7 +31,6 @@ let audio: HTMLAudioElement | null = null
 
 const SHAKE_THRESHOLD = 1500
 const BLUR_THRESHOLD = 3000
-// 変更：script setup内での参照用にリアクティブもしくは変数管理
 const blurTime = ref(0)
 let lastX = 0,
   lastY = 0,
@@ -36,12 +39,26 @@ let lastUpdate = 0
 
 const handleMotion = (event: DeviceMotionEvent) => {
   if (isShaking.value) return
+
+  // 1. 加速度の処理
   const current = event.accelerationIncludingGravity
   if (!current || current.x === null || current.y === null || current.z === null) return
 
-  // ★追加：親コンポーネント（1階目）にデバイスの傾き（x, y）をリアルタイム伝達
   emit('update-acceleration', current.x, current.y)
 
+  // ★追加：回転速度（ジャイロ）の処理
+  // rotationRate.alpha(Z軸), beta(X軸), gamma(Y軸) から、スマホのひねり速度を計算します
+  const rotation = event.rotationRate
+  if (rotation && rotation.alpha !== null && rotation.beta !== null && rotation.gamma !== null) {
+    // 3軸の回転速度の絶対値を合成して「回転全体の激しさ」を算出（単位: 度/秒）
+    const rotationSpeed =
+      Math.abs(rotation.alpha) + Math.abs(rotation.beta) + Math.abs(rotation.gamma)
+
+    // 親コンポーネントへ通知
+    emit('update-rotation-rate', rotationSpeed)
+  }
+
+  // 2. 従来のシェイク・ブラー時間の計算
   const currentTime = Date.now()
   if (currentTime - lastUpdate > 100) {
     const diffTime = currentTime - lastUpdate
@@ -135,7 +152,6 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* 変更：親要素のFlexboxの中で自然に縮むように、固定高さを削除 */
   width: 100%;
 }
 </style>
