@@ -89,7 +89,7 @@ useInfiniteScroll(
 
 <style scoped>
 .timeline-container {
-  height: 100vh;
+  height: 100dvh;
   overflow-y: auto;
 }
 </style>
