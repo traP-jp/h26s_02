@@ -39,7 +39,10 @@ useInfiniteScroll(
     } catch (error) {
       console.error('[PostGrid] 最新の投稿の取得・マージエラー:', error)
     } finally {
-      isLoadingTop.value = false
+      // 10 秒まつ
+      setTimeout(() => {
+        isLoadingTop.value = false
+      }, 10000)
     }
   },
   { direction: 'top', distance: 100 }
