@@ -109,7 +109,8 @@ func (p *Post) GetPostsByTags(ctx context.Context, tagNames []string) ([]*domain
     JOIN post_tags t ON p.id = t.post_id
     WHERE t.name IN (?)
     GROUP BY p.id
-    HAVING COUNT(DISTINCT t.name) = ?`
+    HAVING COUNT(DISTINCT t.name) = ?
+		ORDER BY p.created_at DESC`
 
 	query, args, err := sqlx.In(query, tagNames, len(tagNames))
 	if err != nil {
