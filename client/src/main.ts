@@ -21,30 +21,5 @@ import { useUserStore } from '@/store'
 const userStore = useUserStore(pinia)
 await userStore.initUser()
 
-const handlePostSubmit = async (x: number) => {
-  try {
-    const response = await fetch(`/images/image ${x}.png`)
-    const blob = await response.blob()
-    const imageFile = new File([blob], `image ${x}.png`, { type: 'image/png' })
-    const tags = ['image', `${x}`]
-    const result = await api.newPost({
-      image: imageFile,
-      tags: tags,
-    })
-
-    console.log('[handlePostSubmit] 投稿処理が正常に完了しました。', result)
-  } catch (error) {
-    console.error('[handlePostSubmit] 処理中にエラーが発生しました。', error)
-  }
-}
-
-// 仮の画像を 30 個くらい入れる
-import { api } from '@/schema'
-if ((await api.getPosts()).length === 0) {
-  for (let i = 0; i < 10; i++) {
-    await handlePostSubmit(i + 1)
-  }
-}
-
 console.log('Mode:', import.meta.env.MODE)
 app.mount('#app')
