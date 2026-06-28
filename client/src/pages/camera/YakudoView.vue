@@ -9,6 +9,10 @@
     </div>
 
     <MotionView @update-blur-time="onBlurUpdate" @update-acceleration="onAccelerationUpdate" />
+
+    <div class="action-area">
+      <button class="dummy-post-btn" @click="handlePost">投稿する</button>
+    </div>
   </div>
 </template>
 
@@ -16,6 +20,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import MotionView from '@/pages/camera/MotionView.vue'
+import { api } from '@/schema'
 
 const router = useRouter()
 
@@ -113,6 +118,21 @@ const loadImageFromDataUrl = (dataUrl: string) => {
   }
   sourceImage.src = dataUrl
 }
+
+const handlePost = async () => {
+  if (!canvasRef.value) return
+  const blob = await new Promise<Blob | null>((resolve) => {
+    canvasRef.value!.toBlob(resolve, 'image/png')
+  })
+  if (!blob) throw new Error('Canvas から Blob の生成に失敗しました。')
+
+  // 取得したBlobからFileを作成し、APIに送信します
+  const imageFile = new File([blob], 'image.png', { type: 'image/png' })
+  const tags = ['sample', `tag`]
+
+  await api.newPost({ image: imageFile, tags: tags })
+  await router.push('/')
+}
 </script>
 
 <style scoped>
@@ -183,5 +203,33 @@ canvas {
 :deep(.shake-container) {
   position: relative;
   z-index: 2; /* 背景文字（0）より「前」に出す */
+}
+
+.action-area {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.dummy-post-btn {
+  padding: 14px 40px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #ffffff;
+  background-color: #3182ce;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(49, 130, 206, 0.3);
+  transition: all 0.2s ease;
+}
+
+.dummy-post-btn:hover {
+  background-color: #2b6cb0;
+  transform: translateY(-1px);
+}
+
+.dummy-post-btn:active {
+  transform: translateY(1px);
 }
 </style>

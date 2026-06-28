@@ -3,10 +3,6 @@
     <div v-if="!isPermissionGranted" class="init-screen">
       <p>センサーを準備しています...</p>
     </div>
-
-    <div class="action-area">
-      <button class="dummy-post-btn" @click="handleDummyPost">投稿する</button>
-    </div>
   </div>
 </template>
 
@@ -132,11 +128,6 @@ onUnmounted(() => {
     window.removeEventListener('devicemotion', handleMotion, false)
   }
 })
-
-const handleDummyPost = () => {
-  console.log('[Dummy Post] ボタンがクリックされました。現在のぼかし時間:', blurTime.value)
-  alert(`画像をPOSTしました！（ダミー処理 / blurTime: ${blurTime.value}ms）`)
-}
 </script>
 
 <style scoped>
@@ -146,33 +137,5 @@ const handleDummyPost = () => {
   align-items: center;
   /* 変更：親要素のFlexboxの中で自然に縮むように、固定高さを削除 */
   width: 100%;
-}
-
-.action-area {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-}
-
-.dummy-post-btn {
-  padding: 14px 40px;
-  font-size: 16px;
-  font-weight: bold;
-  color: #ffffff;
-  background-color: #3182ce;
-  border: none;
-  border-radius: 30px;
-  cursor: pointer;
-  box-shadow: 0 4px 6px rgba(49, 130, 206, 0.3);
-  transition: all 0.2s ease;
-}
-
-.dummy-post-btn:hover {
-  background-color: #2b6cb0;
-  transform: translateY(-1px);
-}
-
-.dummy-post-btn:active {
-  transform: translateY(1px);
 }
 </style>
