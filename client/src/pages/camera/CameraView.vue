@@ -101,7 +101,6 @@ const captureAndNavigate = async () => {
   try {
     const canvas = document.createElement('canvas')
 
-    // 1. ビデオの横幅と縦幅のうち、小さい方を基準（一辺の長さ）にする
     const size = Math.min(video.videoWidth, video.videoHeight)
     canvas.width = size
     canvas.height = size
@@ -112,21 +111,25 @@ const captureAndNavigate = async () => {
       return
     }
 
-    // 2. 中央を基準に正方形に切り取るための開始位置（オフセット）を計算
     const sx = (video.videoWidth - size) / 2
     const sy = (video.videoHeight - size) / 2
 
-    // 3. 映像の中央部分を正方形としてCanvasに描画
+    // 【変更点1】インカメラ（user）の場合はCanvasの描画を左右反転させる
+    if (facingMode.value === 'user') {
+      ctx.translate(canvas.width, 0)
+      ctx.scale(-1, 1)
+    }
+
     ctx.drawImage(
       video,
       sx,
       sy,
       size,
-      size, // 元ビデオの切り出し位置とサイズ
+      size,
       0,
       0,
       canvas.width,
-      canvas.height // Canvas上の描画位置とサイズ
+      canvas.height
     )
 
     const dataUrl = canvas.toDataURL('image/png')
@@ -149,7 +152,7 @@ onBeforeUnmount(stopCamera)
 <template>
   <div class="camera-layout-wrapper">
     <div>
-      <RouterLink to="/" class="back-button"> ← </RouterLink>
+      <RouterLink to="/timeline" class="back-button"> ← </RouterLink>
     </div>
 
     <button
@@ -162,10 +165,14 @@ onBeforeUnmount(stopCamera)
     </button>
 
     <div class="camera-container">
-      <!-- <h2>カメラ映像のテスト</h2> -->
-
       <div class="video-cropper">
-        <video ref="videoRef" autoplay playsinline class="camera-video"></video>
+        <video
+          ref="videoRef"
+          autoplay
+          playsinline
+          class="camera-video"
+          :class="{ 'is-user': facingMode === 'user' }"
+        ></video>
       </div>
 
       <div class="button-area">
@@ -220,9 +227,15 @@ onBeforeUnmount(stopCamera)
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   width: 100%;
   height: auto;
-  /*アスペクト比*/
   aspect-ratio: 1 / 1;
   object-fit: cover;
+  /* スムーズな反転のためのアニメーション用（お好みで） */
+  transition: transform 0.3s ease;
+}
+
+/* 【変更点3】インカメラの時だけ、CSSで画面の見た目を左右反転（ミラー）にする */
+.camera-video.is-user {
+  transform: scaleX(-1);
 }
 
 .button-area {
