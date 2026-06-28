@@ -117,3 +117,27 @@ func (r *Reaction) GetReactionsByPostIDs(ctx context.Context, postIDs []uuid.UUI
 	}
 	return result, nil
 }
+
+func (r *Reaction) GetUserReactionsByPostIDs(ctx context.Context, userName string, postIDs []uuid.UUID) (map[uuid.UUID][]int, error) {
+	db := r.db.DB(ctx)
+
+	query, args, err := sqlx.In(
+		"SELECT post_id, reaction_id, user_name, created_at FROM post_reactions WHERE user_name = ? AND post_id IN (?)",
+		userName,
+		postIDs,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("build query: %w", err)
+	}
+
+	var reactions []postReactions
+	if err := db.SelectContext(ctx, &reactions, query, args...); err != nil {
+		return nil, fmt.Errorf("select reactions: %w", err)
+	}
+
+	result := make(map[uuid.UUID][]int, len(postIDs))
+	for _, reaction := range reactions {
+		result[reaction.PostID] = append(result[reaction.PostID], reaction.ReactionID)
+	}
+	return result, nil
+}
