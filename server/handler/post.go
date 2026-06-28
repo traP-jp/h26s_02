@@ -72,7 +72,7 @@ func (p *Post) GetPost(c *echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid post ID")
 	}
 
-	imageURL, err := h.imageStorage.GetTemporalyURL(c.Request().Context(), postID.String())
+	imageURL, err := p.imageStorage.GetTemporalyURL(c.Request().Context(), postID.String())
 	if errors.Is(err, storage.ErrImageNotFound) {
 		return echo.NewHTTPError(http.StatusNotFound, "image not found")
 	}
@@ -243,6 +243,74 @@ func (p *Post) GetPosts(c *echo.Context) error {
 	}
 
 	posts, err := p.postRepository.GetPosts(ctx, referenceTime, req.Limit)
+	if err != nil {
+		log.Printf("failed to get posts: %v\n", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
+	}
+
+	if len(posts) == 0 {
+		return c.JSON(http.StatusOK, []PostResponse{})
+	}
+
+	postIDs := make([]uuid.UUID, len(posts))
+	for i, post := range posts {
+		postIDs[i] = post.GetID()
+	}
+
+	allTags, err := p.tagRepository.GetTagsByPostIDs(ctx, postIDs)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get tags")
+	}
+	allReactions, err := p.reactionRepository.GetReactionsByPostIDs(ctx, postIDs)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get reactions")
+	}
+
+	response := make([]PostResponse, 0, len(posts))
+	for _, post := range posts {
+		postID := post.GetID()
+
+		var tagNames []string
+		for _, t := range allTags[postID] {
+			tagNames = append(tagNames, t.GetName())
+		}
+
+		var reactionRes []ReactionResponse
+		for _, r := range allReactions[postID] {
+			if r.GetCount() > 0 {
+				reactionRes = append(reactionRes, ReactionResponse{
+					ID:    r.GetID(),
+					Count: r.GetCount(),
+				})
+			}
+		}
+
+		imageURL, err := p.imageStorage.GetTemporalyURL(ctx, postID.String())
+		if errors.Is(err, storage.ErrImageNotFound) {
+			return echo.NewHTTPError(http.StatusNotFound, "image not found")
+		}
+		if err != nil {
+			log.Printf("failed to get iamge temporaly url: %v\n", err)
+			return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
+		}
+
+		response = append(response, PostResponse{
+			ID:        postID,
+			UserName:  post.GetUserName(),
+			Tags:      tagNames,
+			ImageURL:  imageURL,
+			Reactions: reactionRes,
+			CreatedAt: post.GetCreatedAt(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, response)
+}
+func (p *Post) GetPostsByUser(c *echo.Context) error {
+	userName := c.Param("id")
+	ctx := c.Request().Context()
+
+	posts, err := p.postRepository.GetPostsByUser(ctx, userName)
 	if err != nil {
 		log.Printf("failed to get posts: %v\n", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
