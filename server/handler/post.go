@@ -140,6 +140,9 @@ func (p *Post) PostPost(c *echo.Context) error {
 				return echo.NewHTTPError(http.StatusBadRequest, "invalid tag length")
 			}
 		}
+
+		slices.Sort(tags)
+		tags = slices.Compact(tags)
 	}
 
 	f, err := header.Open()
