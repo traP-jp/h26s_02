@@ -309,12 +309,12 @@ func (p *Post) GetPosts(c *echo.Context) error {
 	for _, post := range posts {
 		postID := post.GetID()
 
-		var tagNames []string
+		tagNames := make([]string, 0, len(allTags[postID]))
 		for _, t := range allTags[postID] {
 			tagNames = append(tagNames, t.GetName())
 		}
 
-		var reactionRes []ReactionResponse
+		reactionRes := make([]ReactionResponse, 0, len(allReactions[postID]))
 		for _, r := range allReactions[postID] {
 			if r.GetCount() > 0 {
 				myReaction := slices.Contains(userReactions[postID], r.GetID())
@@ -389,12 +389,12 @@ func (p *Post) GetPostsByUser(c *echo.Context) error {
 	for _, post := range posts {
 		postID := post.GetID()
 
-		var tagNames []string
+		tagNames := make([]string, 0, len(allTags[postID]))
 		for _, t := range allTags[postID] {
 			tagNames = append(tagNames, t.GetName())
 		}
 
-		var reactionRes []ReactionResponse
+		reactionRes := make([]ReactionResponse, 0, len(allReactions[postID]))
 		for _, r := range allReactions[postID] {
 			if r.GetCount() > 0 {
 				myReaction := slices.Contains(loginUserReactions[postID], r.GetID())
