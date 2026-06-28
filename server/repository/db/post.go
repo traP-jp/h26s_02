@@ -70,18 +70,6 @@ func (p *Post) GetPostByID(ctx context.Context, id uuid.UUID) (*domain.Post, err
 
 	return domain.NewPost(rec.ID, rec.UserName, rec.CreatedAt), nil
 }
-func (p *Post) GetPost(ctx context.Context, id uuid.UUID) (*domain.Post, error) {
-	var post posts
-	err := p.db.DB(ctx).GetContext(ctx, &post, "SELECT  id, user_name, created_at FROM posts WHERE id = ?", id)
-	if errors.Is(err, sql.ErrNoRows) {
-		return nil, repository.ErrUniqueKeyDuplicated
-	}
-	if err != nil {
-		return nil, fmt.Errorf("get post: %w", err)
-	}
-
-	return domain.NewPost(post.ID, post.UserName, post.CreatedAt), nil
-}
 
 func (p *Post) GetPostsByUser(ctx context.Context, userName string) ([]*domain.Post, error) {
 	var records []posts
