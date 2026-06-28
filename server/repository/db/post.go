@@ -29,15 +29,11 @@ func (p *Post) CreatePost(ctx context.Context, id uuid.UUID, userName string) er
 	return nil
 }
 
-type postRecord struct {
-	ID        uuid.UUID `db:"id"`
-	UserName  string    `db:"user_name"`
-	CreatedAt time.Time `db:"created_at"`
-}
-
-func (p *Post) GetPosts(referenceTime time.Time, limit int) ([]*domain.Post, error) {
+func (p *Post) GetPosts(ctx context.Context, referenceTime time.Time, limit int) ([]*domain.Post, error) {
 	if limit <= 0 {
 		limit = 30
+	} else if limit > 100 {
+		limit = 100
 	}
 
 	query := `
@@ -47,8 +43,8 @@ func (p *Post) GetPosts(referenceTime time.Time, limit int) ([]*domain.Post, err
 		ORDER BY created_at DESC
 		LIMIT ?`
 
-	var records []postRecord
-	if err := p.db.db.Select(&records, query, referenceTime, limit); err != nil {
+	var records []posts
+	if err := p.db.DB(ctx).SelectContext(ctx, &records, query, referenceTime, limit); err != nil {
 		return nil, fmt.Errorf("get posts: %w", err)
 	}
 
@@ -60,14 +56,9 @@ func (p *Post) GetPosts(referenceTime time.Time, limit int) ([]*domain.Post, err
 	return posts, nil
 }
 
-func (p *Post) GetPostByID(id string) (*domain.Post, error) {
-	postID, err := uuid.Parse(id)
-	if err != nil {
-		return nil, fmt.Errorf("parse post id: %w", err)
-	}
-
-	var rec postRecord
-	if err := p.db.db.Get(&rec, "SELECT id, user_name, created_at FROM posts WHERE id = ?", postID); err != nil {
+func (p *Post) GetPostByID(ctx context.Context, id uuid.UUID) (*domain.Post, error) {
+	var rec posts
+	if err := p.db.DB(ctx).GetContext(ctx, &rec, "SELECT id, user_name, created_at FROM posts WHERE id = ?", id); err != nil {
 		return nil, fmt.Errorf("get post by id: %w", err)
 	}
 
@@ -80,5 +71,5 @@ func (p *Post) GetPost(ctx context.Context, id uuid.UUID) (*domain.Post, error) 
 		return nil, fmt.Errorf("get post: %w", err)
 	}
 
-	return domain.NewPost(post.UserName, post.ID, post.CreatedAt), nil
+	return domain.NewPost(post.ID, post.UserName, post.CreatedAt), nil
 }

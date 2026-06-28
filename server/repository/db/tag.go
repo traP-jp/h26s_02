@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/jmoiron/sqlx"
 	"github.com/traP-jp/h26s_02/domain"
 	"github.com/traP-jp/h26s_02/repository"
 )
@@ -78,4 +79,31 @@ func (t *Tag) GetTags(ctx context.Context) ([]repository.TagCount, error) {
 	}
 
 	return tagStats, nil
+}
+
+func (t *Tag) GetTagsByPostIDs(ctx context.Context, postIDs []uuid.UUID) (map[uuid.UUID][]domain.Tag, error) {
+	if len(postIDs) == 0 {
+		return make(map[uuid.UUID][]domain.Tag), nil
+	}
+
+	query := `SELECT post_id, tag_name FROM tags WHERE post_id IN (?)`
+	query, args, err := sqlx.In(query, postIDs)
+	if err != nil {
+		return nil, fmt.Errorf("build query: %w", err)
+	}
+
+	var rows []struct {
+		PostID  uuid.UUID `db:"post_id"`
+		TagName string    `db:"tag_name"`
+	}
+
+	if err := t.db.DB(ctx).SelectContext(ctx, &rows, query, args...); err != nil {
+		return nil, fmt.Errorf("select tags: %w", err)
+	}
+
+	result := make(map[uuid.UUID][]domain.Tag)
+	for _, row := range rows {
+		result[row.PostID] = append(result[row.PostID], *domain.NewTag(row.TagName))
+	}
+	return result, nil
 }

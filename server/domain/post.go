@@ -9,8 +9,6 @@ import (
 type Post struct {
 	id        uuid.UUID
 	userName  string
-	tags      []string
-	reactions []Reaction
 	createdAt time.Time
 }
 
@@ -29,10 +27,4 @@ func (p *Post) GetUserName() string {
 }
 func (p *Post) GetCreatedAt() time.Time {
 	return p.createdAt
-}
-func (p *Post) GetReactions() []Reaction {
-	return p.reactions
-}
-func (p *Post) GetTags() []string {
-	return p.tags
 }

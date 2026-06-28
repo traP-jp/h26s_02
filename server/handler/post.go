@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"image"
 	"io"
@@ -162,7 +163,6 @@ func (p *Post) PostPost(c *echo.Context) error {
 
 		return nil
 	})
-
 	if err != nil {
 		return err
 	}
@@ -192,6 +192,8 @@ type PostResponse struct {
 }
 
 func (p *Post) GetPosts(c *echo.Context) error {
+	ctx := c.Request().Context()
+
 	req := GetPostsRequest{Limit: 30}
 	if err := c.Bind(&req); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid query parameters")
@@ -199,39 +201,67 @@ func (p *Post) GetPosts(c *echo.Context) error {
 
 	var referenceTime time.Time
 	if req.Before != uuid.Nil {
-		post, err := p.postRepository.GetPostByID(req.Before.String())
+		post, err := p.postRepository.GetPostByID(ctx, req.Before)
 		if err != nil {
-			return echo.NewHTTPError(http.StatusNotFound, "post not found")
+			if errors.Is(err, sql.ErrNoRows) {
+				return echo.NewHTTPError(http.StatusNotFound, "post not found")
+			}
+			return echo.NewHTTPError(http.StatusInternalServerError, "failed to get post: "+err.Error())
 		}
 		referenceTime = post.GetCreatedAt()
 	} else {
 		referenceTime = time.Now()
 	}
 
-	posts, err := p.postRepository.GetPosts(referenceTime, req.Limit)
+	posts, err := p.postRepository.GetPosts(ctx, referenceTime, req.Limit)
 	if err != nil {
 		log.Printf("failed to get posts: %v\n", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
 	}
 
+	if len(posts) == 0 {
+		return c.JSON(http.StatusOK, []PostResponse{})
+	}
+
+	postIDs := make([]uuid.UUID, len(posts))
+	for i, post := range posts {
+		postIDs[i] = post.GetID()
+	}
+
+	allTags, err := p.tagRepository.GetTagsByPostIDs(ctx, postIDs)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get tags")
+	}
+	allReactions, err := p.reactionRepository.GetReactionsByPostIDs(ctx, postIDs)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get reactions")
+	}
+
 	response := make([]PostResponse, 0, len(posts))
 	for _, post := range posts {
-		reactions := make([]ReactionResponse, 0)
-		for _, reaction := range post.GetReactions() {
-			if reaction.GetCount() > 0 {
-				reactions = append(reactions, ReactionResponse{
-					ID:    reaction.GetID(),
-					Count: reaction.GetCount(),
+		postID := post.GetID()
+
+		var tagNames []string
+		for _, t := range allTags[postID] {
+			tagNames = append(tagNames, t.GetName())
+		}
+
+		var reactionRes []ReactionResponse
+		for _, r := range allReactions[postID] {
+			if r.GetCount() > 0 {
+				reactionRes = append(reactionRes, ReactionResponse{
+					ID:    r.GetID(),
+					Count: r.GetCount(),
 				})
 			}
 		}
 
 		response = append(response, PostResponse{
-			ID:        post.GetID(),
+			ID:        postID,
 			UserName:  post.GetUserName(),
-			Tags:      post.GetTags(),
+			Tags:      tagNames,
 			ImageURL:  "",
-			Reactions: reactions,
+			Reactions: reactionRes,
 			CreatedAt: post.GetCreatedAt(),
 		})
 	}
