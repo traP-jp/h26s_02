@@ -8,7 +8,7 @@
             v-model.number="blurStrength"
             type="range"
             min="0"
-            max="1"
+            max="3"
             step="0.01"
             @input="drawCanvas"
           />
@@ -66,7 +66,7 @@ const resetBlur = () => {
   drawCanvas()
 }
 
-const MAX_BLUR_TIME = 2000
+const MAX_BLUR_TIME = 1000
 
 // テンプレート参照の型定義
 const canvasRef = ref<HTMLCanvasElement | null>(null)
