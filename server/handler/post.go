@@ -2,7 +2,6 @@ package handler
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"image"
 	"io"
@@ -203,10 +202,10 @@ func (p *Post) GetPosts(c *echo.Context) error {
 	if req.Before != uuid.Nil {
 		post, err := p.postRepository.GetPostByID(ctx, req.Before)
 		if err != nil {
-			if errors.Is(err, sql.ErrNoRows) {
+			if errors.Is(err, repository.ErrRecordNotFound) {
 				return echo.NewHTTPError(http.StatusNotFound, "post not found")
 			}
-			return echo.NewHTTPError(http.StatusInternalServerError, "failed to get post: "+err.Error())
+			return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
 		}
 		referenceTime = post.GetCreatedAt()
 	} else {
