@@ -18,6 +18,11 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/pages/camera/CameraView.vue'),
   },
   {
+    path: '/camera/yakudo',
+    name: 'CameraYakudo',
+    component: () => import('@/pages/camera/YakudoView.vue'),
+  },
+  {
     path: '/search',
     name: 'Search',
     component: () => import('@/pages/grid/SearchView.vue'),

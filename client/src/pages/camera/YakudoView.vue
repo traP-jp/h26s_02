@@ -1,58 +1,17 @@
 <template>
   <div class="radial-blur-container">
-    <div class="controls">
-      <div v-if="imageLoaded" class="sliders">
-        <label class="slider-label">
-          ぼかしの強さ (ブレ幅):
-          <input
-            v-model.number="blurStrength"
-            type="range"
-            min="0"
-            max="3"
-            step="0.01"
-            @input="drawCanvas"
-          />
-          {{ blurStrength }}
-        </label>
-        <label class="slider-label">
-          中心位置 X:
-          <input
-            v-model.number="centerX"
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
-            @input="drawCanvas"
-          />
-          {{ Math.round(centerX * 100) }}%
-        </label>
-        <label class="slider-label">
-          中心位置 Y:
-          <input
-            v-model.number="centerY"
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
-            @input="drawCanvas"
-          />
-          {{ Math.round(centerY * 100) }}%
-        </label>
-      </div>
-    </div>
-
     <div v-show="imageLoaded" class="canvas-wrapper">
       <canvas ref="canvasRef"></canvas>
     </div>
   </div>
 
-  <MotionView @update-blur-time="onBlurUpdate" />
+  <MotionView @update-blur-time="onBlurUpdate" @update-acceleration="onAccelerationUpdate" />
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import MotionView from './MotionView.vue'
+import MotionView from '@/pages/camera/MotionView.vue'
 
 const router = useRouter()
 
@@ -68,17 +27,30 @@ const resetBlur = () => {
 
 const MAX_BLUR_TIME = 1000
 
-// テンプレート参照の型定義
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 const imageLoaded = ref<boolean>(false)
 
-// パラメータの型定義
 const blurStrength = ref<number>(0.5)
-const centerX = ref<number>(0.5)
-const centerY = ref<number>(0.5)
+const centerX = ref<number>(0.5) // 初期値は中央(0.5)
+const centerY = ref<number>(0.5) // 初期値は中央(0.5)
 const blurTime = ref<number>(0)
 
-// 画像オブジェクトを保持
+// ★加速度を受け取って中心点を動かすイベントハンドラーを追加
+const onAccelerationUpdate = (accelX: number, accelY: number) => {
+  // デバイスモーションの加速度（通常 -10 〜 10 程度）を、0.0 〜 1.0 の範囲に変換
+  // 感度を調整したい場合は「/ 20」の数値を変更してください（小さくするとより大きく動くようになります）
+  // 1. スマートフォンの傾きに対して直感的に動かすため、符号を調整（必要に応じて - を + にしてください）
+  const biasX = -accelX / 10
+  const biasY = accelY / 10
+
+  // 基準値（0.5 = 画面中央）に加速度のブレを加算し、0.0 〜 1.0 の範囲に収める（クランプ処理）
+  centerX.value = Math.max(0, Math.min(1, 0.5 + biasX))
+  centerY.value = Math.max(0, Math.min(1, 0.5 + biasY))
+
+  // 加速度が変わるたびにCanvasを再描画
+  drawCanvas()
+}
+
 let sourceImage: HTMLImageElement | null = null
 
 const handleImageUpload = (event: Event) => {
@@ -147,16 +119,15 @@ const drawCanvas = () => {
   ctx.globalAlpha = 1.0
 }
 
-onMounted(async () => {
+onMounted(() => {
   const state = history.state as { capturedImage?: string }
 
-  if (state.capturedImage) {
+  if (state && state.capturedImage) {
     console.log('[RadialBlur] 撮影された写真を自動読込します。')
     loadImageFromDataUrl(state.capturedImage)
   } else {
     console.warn('[RadialBlur] 撮影データが見つかりません。カメラ画面に戻ります。')
-
-    await router.push('/camera')
+    router.push('/camera')
   }
 })
 

@@ -114,7 +114,7 @@ const captureAndNavigate = async () => {
     const dataUrl = canvas.toDataURL('image/png')
 
     await router.push({
-      path: '/samples/yakudo',
+      path: '/camera/yakudo',
       state: { capturedImage: dataUrl },
     })
 

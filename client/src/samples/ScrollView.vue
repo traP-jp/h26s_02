@@ -53,7 +53,6 @@ const loadMoreTop = (): void => {
       // 1. データ追加前のスクロール領域の全体の高さを記憶
       const previousScrollHeight = el.value?.scrollHeight ?? 0
 
-
       // 2. 配列の先頭にデータを追加
       emit('reach-bottom')
 
