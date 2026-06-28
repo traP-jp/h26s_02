@@ -491,7 +491,7 @@ func (p *Post) toPostResponses(ctx context.Context, userName string, posts []*do
 		if !ok {
 			postUserReactions = []int{}
 		}
-		var reactionRes []ReactionResponse
+		reactionRes := make([]ReactionResponse, 0, len(allReactions))
 		for _, r := range allReactions {
 			if r.GetCount() > 0 {
 				myReaction := slices.Contains(postUserReactions, r.GetID())
