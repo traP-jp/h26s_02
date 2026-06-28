@@ -99,7 +99,7 @@ export const api = {
   getPosts: async (before?: string, limit?: number, tag?: string) => {
     return (await fetchApi('GET', '/posts', {
       queryParams: {
-        ...(tag ? { tag } : {}),
+        ...(tag ? { tags: tag } : {}),
         ...(before ? { before } : {}),
         ...(limit ? { limit: limit.toString() } : {}),
       },
