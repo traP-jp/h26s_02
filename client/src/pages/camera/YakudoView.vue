@@ -14,6 +14,8 @@
       @update-rotation-rate="onUpdateRotationRate"
     />
 
+    <HashtagInput v-model="myTags" />
+
     <div class="action-area">
       <button class="dummy-post-btn" @click="handlePost">投稿する</button>
     </div>
@@ -24,7 +26,10 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import MotionView from '@/pages/camera/MotionView.vue'
+import HashtagInput from '@/pages/camera/TagInput.vue'
 import { api } from '@/schema'
+
+const myTags = ref<string[]>(['躍動'])
 
 const router = useRouter()
 
@@ -138,9 +143,8 @@ const handlePost = async () => {
   if (!blob) throw new Error('Canvas から Blob の生成に失敗しました。')
 
   const imageFile = new File([blob], 'image.png', { type: 'image/png' })
-  const tags = ['sample', `tag`]
 
-  await api.newPost({ image: imageFile, tags: tags })
+  await api.newPost({ image: imageFile, tags: myTags.value })
   await router.push('/')
 }
 </script>
@@ -154,7 +158,7 @@ const handlePost = async () => {
   justify-content: center;
   align-items: center;
   width: 100vw;
-  height: 100vh;
+  height: 100dvh;
   box-sizing: border-box;
   padding: 24px;
   gap: 24px;
@@ -199,7 +203,6 @@ const handlePost = async () => {
   max-height: 100%;
   overflow: hidden;
   border-radius: 12px;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2); /* 影を少し強めに */
 }
 
 canvas {
@@ -219,6 +222,7 @@ canvas {
   display: flex;
   justify-content: center;
   width: 100%;
+  z-index: 10;
 }
 
 .dummy-post-btn {
@@ -226,7 +230,7 @@ canvas {
   font-size: 16px;
   font-weight: bold;
   color: #ffffff;
-  background-color: #3182ce;
+  background-color: #0071da;
   border: none;
   border-radius: 30px;
   cursor: pointer;
@@ -235,11 +239,6 @@ canvas {
 }
 
 .dummy-post-btn:hover {
-  background-color: #2b6cb0;
-  transform: translateY(-1px);
-}
-
-.dummy-post-btn:active {
-  transform: translateY(1px);
+  background-color: #00448c;
 }
 </style>

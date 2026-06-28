@@ -1,7 +1,5 @@
 <script setup lang="ts">
 defineProps<{
-  posts?: number
-  reactions?: number
   title: string
 }>()
 </script>
@@ -13,16 +11,6 @@ defineProps<{
     </div>
     <div>
       <div class="header-title">{{ title }}</div>
-      <div class="header-nums">
-        <div>
-          <span class="info-num">{{ posts ?? 0 }}</span>
-          <span class="info-label">投稿</span>
-        </div>
-        <div>
-          <span class="info-num">{{ reactions ?? 0 }}</span>
-          <span class="info-label">リアクション</span>
-        </div>
-      </div>
     </div>
   </div>
 </template>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import MSIcon from '@/components/MSIcon.vue'
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -151,9 +152,9 @@ onBeforeUnmount(stopCamera)
 
 <template>
   <div class="camera-layout-wrapper">
-    <div>
-      <RouterLink to="/timeline" class="back-button"> ← </RouterLink>
-    </div>
+    <RouterLink to="/" class="back-button">
+      <MSIcon name="arrow-back" style="width: 32px" />
+    </RouterLink>
 
     <button
       :disabled="!isCameraActive || isSwitching"
@@ -161,7 +162,7 @@ onBeforeUnmount(stopCamera)
       aria-label="カメラ切り替え"
       @click="switchCamera"
     >
-      <span class="switch-icon"></span>
+      <MSIcon name="cached" style="width: 32px" />
     </button>
 
     <div class="camera-container">
@@ -201,7 +202,7 @@ onBeforeUnmount(stopCamera)
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
+  min-height: 100dvh;
   width: 100%;
   box-sizing: border-box;
   padding: 2rem 0;
@@ -256,9 +257,7 @@ onBeforeUnmount(stopCamera)
   cursor: pointer;
   z-index: 10;
 
-  background-color: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background-color: rgba(255, 255, 255, 1);
 
   display: flex;
   align-items: center;
@@ -268,7 +267,6 @@ onBeforeUnmount(stopCamera)
     background-color 0.25s ease,
     transform 0.2s ease,
     opacity 0.3s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .switch-button:hover:not(:disabled) {
@@ -280,18 +278,6 @@ onBeforeUnmount(stopCamera)
   cursor: not-allowed;
   opacity: 0.4;
   background-color: rgba(255, 255, 255, 0.05);
-}
-
-.switch-icon {
-  position: relative;
-  width: 20px;
-  height: 20px;
-  border: 2px solid #ffffff;
-  border-radius: 50%;
-  border-right-color: transparent;
-  border-left-color: transparent;
-  transform: rotate(-45deg);
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .switch-icon::before,
@@ -383,14 +369,15 @@ onBeforeUnmount(stopCamera)
   top: 20px;
   left: 20px;
 
+  width: 48px;
+  height: 48px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  background-color: rgba(0, 0, 0, 0.6);
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 1);
   color: white;
   border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 20px;
+  border-radius: 40px;
   cursor: pointer;
   font-size: 14px;
 }

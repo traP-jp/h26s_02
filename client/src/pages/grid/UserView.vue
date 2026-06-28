@@ -18,7 +18,7 @@ const loadNew = async (existingIds: Set<string>) => {
 
 <template>
   <PostGrid :load-new="loadNew" />
-  <GridHeader :posts="12" :reactions="30" :title="userId">
+  <GridHeader :posts="12" :title="userId">
     <UserIcon :user-id="userId" />
   </GridHeader>
   <BottomNav />

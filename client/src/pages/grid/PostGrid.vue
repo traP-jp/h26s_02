@@ -39,12 +39,14 @@ useInfiniteScroll(
     } catch (error) {
       console.error('[PostGrid] 最新の投稿の取得・マージエラー:', error)
     } finally {
-      isLoadingTop.value = false
+      // 10 秒まつ
+      setTimeout(() => {
+        isLoadingTop.value = false
+      }, 10000)
     }
   },
   { direction: 'top', distance: 100 }
 )
-
 </script>
 
 <template>
@@ -55,8 +57,9 @@ useInfiniteScroll(
 
 <style scoped>
 .grid {
+  margin-top: 120px;
   max-width: 800px;
-  height: 100vh;
+  height: 100dvh;
   overflow-y: auto;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
