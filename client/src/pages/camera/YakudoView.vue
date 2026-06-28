@@ -171,7 +171,6 @@ const handlePost = async () => {
   position: absolute;
   bottom: -2vh; /* 文字が大きくなった分、下からはみ出させるためにマイナスに調整 */
   left: 50%;
-  z-index: -10;
   transform: translateX(-50%) rotate(-8deg); /* 大きな文字が綺麗に見えるよう、傾きを少し緩やか（-8度）に */
 
   font-size: 45vw; /* ★ 30vw から 45vw に大幅アップ！ */
@@ -204,7 +203,6 @@ const handlePost = async () => {
   max-height: 100%;
   overflow: hidden;
   border-radius: 12px;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2); /* 影を少し強めに */
 }
 
 canvas {
@@ -224,6 +222,7 @@ canvas {
   display: flex;
   justify-content: center;
   width: 100%;
+  z-index: 10;
 }
 
 .dummy-post-btn {
@@ -231,7 +230,7 @@ canvas {
   font-size: 16px;
   font-weight: bold;
   color: #ffffff;
-  background-color: #3182ce;
+  background-color: #0071da;
   border: none;
   border-radius: 30px;
   cursor: pointer;
@@ -240,11 +239,6 @@ canvas {
 }
 
 .dummy-post-btn:hover {
-  background-color: #2b6cb0;
-  transform: translateY(-1px);
-}
-
-.dummy-post-btn:active {
-  transform: translateY(1px);
+  background-color: #00448c;
 }
 </style>
