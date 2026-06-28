@@ -14,14 +14,10 @@ const loadNew = async (existingIds: Set<string>) => {
   const newPosts = latestPosts.filter((post) => !existingIds.has(post.id))
   return newPosts
 }
-
-const loadOld = async (lastId?: string) => {
-  return await api.getUserPosts(userId, lastId)
-}
 </script>
 
 <template>
-  <PostGrid :load-new="loadNew" :load-old="loadOld" />
+  <PostGrid :load-new="loadNew" />
   <GridHeader :posts="12" :reactions="30" :title="userId">
     <UserIcon :user-id="userId" />
   </GridHeader>
