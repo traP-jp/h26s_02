@@ -4,7 +4,7 @@
       <p>センサーを準備しています...</p>
     </div>
     <div v-else class="ready-screen">
-      <p>スマホを振ってください！</p>
+      <p>端末を躍動させろ！</p>
     </div>
   </div>
 </template>
