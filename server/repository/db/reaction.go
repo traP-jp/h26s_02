@@ -93,7 +93,7 @@ func (r *Reaction) GetReactionsByPostIDs(ctx context.Context, postIDs []uuid.UUI
 		return make(map[uuid.UUID][]*domain.ReactionCount), nil
 	}
 
-	query := `SELECT post_id, reaction_id, count FROM reactions WHERE post_id IN (?)`
+	query := `SELECT post_id, reaction_id, COUNT(post_id) AS count FROM post_reactions WHERE post_id IN (?) GROUP BY post_id, reaction_id`
 	query, args, err := sqlx.In(query, postIDs)
 	if err != nil {
 		return nil, fmt.Errorf("build query: %w", err)

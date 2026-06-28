@@ -259,11 +259,13 @@ func (p *Post) GetPosts(c *echo.Context) error {
 
 	allTags, err := p.tagRepository.GetTagsByPostIDs(ctx, postIDs)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get tags")
+		log.Printf("failed to get tags: %v\n", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
 	}
 	allReactions, err := p.reactionRepository.GetReactionsByPostIDs(ctx, postIDs)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get reactions")
+		log.Printf("failed to get reactions: %v\n", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
 	}
 
 	response := make([]PostResponse, 0, len(posts))
