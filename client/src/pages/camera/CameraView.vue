@@ -11,7 +11,7 @@ const isSwitching = ref<boolean>(false)
 const isPressing = ref<boolean>(false)
 
 let currentStream: MediaStream | null = null
-const facingMode = ref<'user' | 'environment'>('user')
+const facingMode = ref<'user' | 'environment'>('environment')
 
 const startPress = () => {
   if (!isCameraActive.value || isSwitching.value) return
