@@ -4,29 +4,25 @@
       <p>センサーを準備しています...</p>
     </div>
 
-    <!-- <div v-else class="play-screen">
-      <p>スマホを振ってみてください！</p>
-      <div class="device-icon" :class="{ shaking: isShaking }">［スマートフォン］</div>
-    </div> -->
-    <!--
-    <div v-show="imageLoaded" class="canvas-wrapper">
-      <canvas ref="canvasRef"></canvas>
-    </div> -->
+    <div class="action-area">
+      <button class="dummy-post-btn" @click="handleDummyPost">投稿する</button>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 
+// 変更：update-acceleration も親へ送れるように定義を追加
 const emit = defineEmits<{
   'update-blur-time': [blurTime: number]
+  'update-acceleration': [accelX: number, accelY: number]
 }>()
 
 const isPermissionGranted = ref(false)
 const isShaking = ref(false)
 const debugLogs = ref<string[]>([])
 
-// 画面にログを出力するためのヘルパー関数
 const addLog = (message: string) => {
   debugLogs.value.push(message)
 }
@@ -35,7 +31,8 @@ let audio: HTMLAudioElement | null = null
 
 const SHAKE_THRESHOLD = 1500
 const BLUR_THRESHOLD = 3000
-let blurTime = 0
+// 変更：script setup内での参照用にリアクティブもしくは変数管理
+const blurTime = ref(0)
 let lastX = 0,
   lastY = 0,
   lastZ = 0
@@ -44,8 +41,10 @@ let lastUpdate = 0
 const handleMotion = (event: DeviceMotionEvent) => {
   if (isShaking.value) return
   const current = event.accelerationIncludingGravity
-  // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
   if (!current || current.x === null || current.y === null || current.z === null) return
+
+  // ★追加：親コンポーネント（1階目）にデバイスの傾き（x, y）をリアルタイム伝達
+  emit('update-acceleration', current.x, current.y)
 
   const currentTime = Date.now()
   if (currentTime - lastUpdate > 100) {
@@ -68,14 +67,12 @@ const handleMotion = (event: DeviceMotionEvent) => {
     const isStrongShake = speed > BLUR_THRESHOLD
 
     if (isStrongShake) {
-      addLog(`[Motion] 強いシェイクの検知: Blur Time ${blurTime} ms`)
-
-      blurTime += diffTime
+      addLog(`[Motion] 強いシェイクの検知: Blur Time ${blurTime.value} ms`)
+      blurTime.value += diffTime
     }
 
-    blurTime = Math.min(blurTime, 3000)
-
-    emit('update-blur-time', blurTime)
+    blurTime.value = Math.min(blurTime.value, 3000)
+    emit('update-blur-time', blurTime.value)
 
     lastX = current.x
     lastY = current.y
@@ -98,12 +95,10 @@ const playSound = () => {
 
 onMounted(() => {
   addLog('[Auto] ページが読み込まれたため、自動でセンサーを要求します')
-  requestAccess()
+  void requestAccess()
 })
 
 const requestAccess = async () => {
-  addLog('[Init] ボタンが押されました')
-
   try {
     audio = new Audio(soundUrl)
     audio.play().catch((e) => {
@@ -111,41 +106,24 @@ const requestAccess = async () => {
     })
     audio.pause()
     audio.currentTime = 0
-    addLog('[Init] 音声の初期化完了')
 
-    // DeviceMotionEventが存在するか確認
     if (typeof DeviceMotionEvent === 'undefined') {
-      addLog(
-        '[Error] DeviceMotionEventが未定義です。HTTPS環境またはlocalhostでアクセスしていますか？'
-      )
+      addLog('[Error] DeviceMotionEventが未定義です。')
       return
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
     if (typeof (DeviceMotionEvent as any).requestPermission === 'function') {
-      addLog('[Init] iOS向け許可プロンプトを要求します')
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       const permissionState = await (DeviceMotionEvent as any).requestPermission()
-      addLog(`[Init] 許可ステータス: ${permissionState}`)
-
       if (permissionState === 'granted') {
         window.addEventListener('devicemotion', handleMotion, false)
         isPermissionGranted.value = true
-        addLog('[Init] センサーを登録しました')
-      } else {
-        addLog('[Error] センサーへのアクセスが拒否されました')
       }
     } else {
-      addLog('[Init] プロンプト不要環境。センサーを登録します')
       window.addEventListener('devicemotion', handleMotion, false)
       isPermissionGranted.value = true
     }
   } catch (error: unknown) {
-    if (error instanceof Error) {
-      addLog(`[Exception] 例外エラー発生: ${error.message}`)
-    } else {
-      addLog(`[Exception] 例外エラー発生: ${String(error)}`)
-    }
+    console.error(error)
   }
 }
 
@@ -154,6 +132,11 @@ onUnmounted(() => {
     window.removeEventListener('devicemotion', handleMotion, false)
   }
 })
+
+const handleDummyPost = () => {
+  console.log('[Dummy Post] ボタンがクリックされました。現在のぼかし時間:', blurTime.value)
+  alert(`画像をPOSTしました！（ダミー処理 / blurTime: ${blurTime.value}ms）`)
+}
 </script>
 
 <style scoped>
@@ -161,74 +144,11 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-height: 50vh;
-  text-align: center;
-  font-family: sans-serif;
-  padding: 20px;
-  border: 1px solid red;
-}
-
-.start-btn {
-  padding: 12px 24px;
-  font-size: 16px;
-  background-color: #42b983;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  margin-bottom: 20px;
-}
-
-.device-icon {
-  font-size: 24px;
-  margin-top: 20px;
-  font-weight: bold;
-  transition: transform 0.1s ease-in-out;
-}
-
-.shaking {
-  animation: shake-animation 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
-}
-
-@keyframes shake-animation {
-  10%,
-  90% {
-    transform: translate3d(-5px, 0, 0) rotate(-5deg);
-  }
-  20%,
-  80% {
-    transform: translate3d(5px, 0, 0) rotate(5deg);
-  }
-  30%,
-  50%,
-  70% {
-    transform: translate3d(-10px, 0, 0) rotate(-10deg);
-  }
-  40%,
-  60% {
-    transform: translate3d(10px, 0, 0) rotate(10deg);
-  }
-}
-
-.debug-panel {
-  margin-top: 40px;
-  padding: 10px;
-  background-color: #f5f5f5;
-  border: 1px solid #ccc;
+  /* 変更：親要素のFlexboxの中で自然に縮むように、固定高さを削除 */
   width: 100%;
-  max-width: 400px;
-  text-align: left;
-}
-
-.log-list {
-  font-size: 12px;
-  color: #333;
-  padding-left: 20px;
-  word-break: break-all;
 }
 
 .action-area {
-  margin-top: 20px;
   display: flex;
   justify-content: center;
   width: 100%;
@@ -239,23 +159,20 @@ onUnmounted(() => {
   font-size: 16px;
   font-weight: bold;
   color: #ffffff;
-  background-color: #3182ce; /* スッキリしたブルー */
+  background-color: #3182ce;
   border: none;
-  border-radius: 30px; /* 丸みのあるかわいいデザイン */
+  border-radius: 30px;
   cursor: pointer;
   box-shadow: 0 4px 6px rgba(49, 130, 206, 0.3);
   transition: all 0.2s ease;
 }
 
-/* ホバー（PCでマウスを乗せたとき）やタップしたときの動き */
 .dummy-post-btn:hover {
   background-color: #2b6cb0;
   transform: translateY(-1px);
-  box-shadow: 0 6px 8px rgba(49, 130, 206, 0.4);
 }
 
 .dummy-post-btn:active {
   transform: translateY(1px);
-  box-shadow: 0 2px 4px rgba(49, 130, 206, 0.2);
 }
 </style>
