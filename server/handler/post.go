@@ -268,11 +268,9 @@ func (p *Post) GetPosts(c *echo.Context) error {
 			return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
 		}
 		referenceTime = post.GetCreatedAt()
-	} else {
-		referenceTime = time.Now()
 	}
 
-	posts, err := p.postRepository.GetPosts(ctx, referenceTime, req.Limit)
+	posts, err := p.postRepository.GetPosts(ctx, req.Before, referenceTime, req.Limit)
 	if err != nil {
 		log.Printf("failed to get posts: %v\n", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
