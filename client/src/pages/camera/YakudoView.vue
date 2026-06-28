@@ -8,7 +8,11 @@
       </div>
     </div>
 
-    <MotionView @update-blur-time="onBlurUpdate" @update-acceleration="onAccelerationUpdate" />
+    <MotionView
+      @update-blur-time="onBlurUpdate"
+      @update-acceleration="onAccelerationUpdate"
+      @update-rotation-rate="onUpdateRotationRate"
+    />
 
     <div class="action-area">
       <button class="dummy-post-btn" @click="handlePost">投稿する</button>
@@ -31,6 +35,15 @@ const onBlurUpdate = (value: number) => {
 
 const resetBlur = () => {
   blurTime.value = 0
+  drawCanvas()
+}
+
+const currentRotationRate = ref(0)
+
+const onUpdateRotationRate = (rate: number) => {
+  // ここで受け取った回転加速度を保持し、drawCanvas() 内で利用します
+  currentRotationRate.value = rate
+  // もしアニメーションループ(requestAnimationFrame)を使っていない場合は、ここで drawCanvas() を呼ぶ
   drawCanvas()
 }
 
@@ -61,10 +74,7 @@ const drawCanvas = () => {
   if (!canvas || !sourceImage) return
 
   const ctx = canvas.getContext('2d')
-  if (!ctx) {
-    console.error('[RadialBlur] Canvas 2Dコンテキストの取得に失敗しました。')
-    return
-  }
+  if (!ctx) return
 
   canvas.width = sourceImage.width
   canvas.height = sourceImage.height
@@ -77,19 +87,35 @@ const drawCanvas = () => {
   ctx.globalAlpha = 1.0
   ctx.drawImage(sourceImage, 0, 0)
 
-  const strength = Math.min(blurTime.value / MAX_BLUR_TIME / 2, 1)
+  // 従来の拡大ブラーの強さ（ブレの広がり度合い）
+  const strength = Math.min(blurTime.value / MAX_BLUR_TIME / 2, 3)
+
+  // ★変更：デバイスの回転速度（currentRotationRate）を回転角度に変換
+  // rotationRate は激しく動かすと数百（度/秒）になるため、適切な係数（例: 0.005）を掛けます。
+  // 好みに応じて 0.005 を調整して、回転の敏感さを変えてください。
+  const maxRotation = Math.min(currentRotationRate.value * 1, 3)
+
   const passes = 60
   const originX: number = canvas.width * centerX.value
   const originY: number = canvas.height * centerY.value
 
-  ctx.globalAlpha = (1.0 / passes) * 3
+  ctx.globalAlpha = (1.0 / passes) * 4.0
 
   for (let i = 0; i < passes; i++) {
-    const scale = 1 + strength * (i / passes)
+    const ratio = i / passes
+    const scale = 1 + strength * ratio
+
+    // ★ maxRotation が回転の強さにダイレクトに連動するようになりました！
+    // 拡大ブラーの進捗（ratio）の2乗を掛けることで綺麗にブレさせます
+    const angle = maxRotation * (ratio * ratio)
 
     ctx.save()
     ctx.translate(originX, originY)
+
+    // 回転 ➔ 拡大
+    ctx.rotate(angle)
     ctx.scale(scale, scale)
+
     ctx.translate(-originX, -originY)
     ctx.drawImage(sourceImage, 0, 0, canvas.width, canvas.height)
     ctx.restore()
