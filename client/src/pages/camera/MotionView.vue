@@ -5,7 +5,6 @@
     </div>
     <div v-else class="ready-screen">
       <p>端末を躍動させろ！</p>
-      <p>現在の最大回転速度: {{ Math.floor(maxRotationRate) }}</p>
     </div>
   </div>
 </template>
