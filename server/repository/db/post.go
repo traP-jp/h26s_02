@@ -2,11 +2,14 @@ package db
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/traP-jp/h26s_02/domain"
+	"github.com/traP-jp/h26s_02/repository"
 )
 
 type Post struct {
@@ -67,6 +70,9 @@ func (p *Post) GetPostByID(ctx context.Context, id uuid.UUID) (*domain.Post, err
 func (p *Post) GetPost(ctx context.Context, id uuid.UUID) (*domain.Post, error) {
 	var post posts
 	err := p.db.DB(ctx).GetContext(ctx, &post, "SELECT  id, user_name, created_at FROM posts WHERE id = ?", id)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, repository.ErrUniqueKeyDuplicated
+	}
 	if err != nil {
 		return nil, fmt.Errorf("get post: %w", err)
 	}
