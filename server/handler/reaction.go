@@ -15,7 +15,7 @@ type postReactionRequest struct {
 	ID int `json:"id"`
 }
 
-func (h *Post) PostReaction(c *echo.Context) error {
+func (p *Post) PostReaction(c *echo.Context) error {
 	postID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid post ID")
@@ -35,8 +35,8 @@ func (h *Post) PostReaction(c *echo.Context) error {
 	}
 
 	var reactionCountResponses []reactionCountResponse
-	err = h.db.Transaction(c.Request().Context(), func(ctx context.Context) error {
-		_, err := h.postRepository.GetPost(ctx, postID)
+	err = p.db.Transaction(c.Request().Context(), func(ctx context.Context) error {
+		_, err := p.postRepository.GetPost(ctx, postID)
 		if errors.Is(err, repository.ErrRecordNotFound) {
 			return echo.NewHTTPError(http.StatusNotFound, "post not found")
 		}
@@ -45,7 +45,7 @@ func (h *Post) PostReaction(c *echo.Context) error {
 			return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
 		}
 
-		if err := h.reactionRepository.CreateReaction(ctx, postID, req.ID, userName); err != nil {
+		if err := p.reactionRepository.CreateReaction(ctx, postID, req.ID, userName); err != nil {
 			if errors.Is(err, repository.ErrUniqueKeyDuplicated) {
 				return echo.NewHTTPError(http.StatusBadRequest, "already reacted")
 			}
@@ -56,7 +56,7 @@ func (h *Post) PostReaction(c *echo.Context) error {
 			return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
 		}
 
-		reactions, err := h.reactionRepository.GetReactionCount(ctx, postID)
+		reactions, err := p.reactionRepository.GetReactionCount(ctx, postID)
 		if err != nil {
 			log.Printf("failed to get reaction count: %v\n", err)
 			return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")

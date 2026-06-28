@@ -30,6 +30,10 @@ func (h *Handler) Start(e *echo.Echo) {
 	api.GET("/posts/:id", h.post.GetPost)
 	api.POST("/posts/:id/reactions", h.post.PostReaction)
 	api.GET("/tags", h.tag.GetTags)
+
+	api.DELETE("/posts/:id/reactions/:reaction_id", h.post.DeleteReaction)
+	// api.GET("/posts", h.post.GetPosts)
+
 	api.GET("/posts", h.post.GetPosts)
 
 	log.Fatal(e.Start(":8080"))
