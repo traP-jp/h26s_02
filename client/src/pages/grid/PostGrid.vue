@@ -44,7 +44,6 @@ useInfiniteScroll(
   },
   { direction: 'top', distance: 100 }
 )
-
 </script>
 
 <template>
@@ -56,7 +55,7 @@ useInfiniteScroll(
 <style scoped>
 .grid {
   max-width: 800px;
-  height: 100vh;
+  height: 100dvh;
   overflow-y: auto;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));

@@ -154,7 +154,7 @@ const handlePost = async () => {
   justify-content: center;
   align-items: center;
   width: 100vw;
-  height: 100vh;
+  height: 100dvh;
   box-sizing: border-box;
   padding: 24px;
   gap: 24px;
@@ -167,6 +167,7 @@ const handlePost = async () => {
   position: absolute;
   bottom: -2vh; /* 文字が大きくなった分、下からはみ出させるためにマイナスに調整 */
   left: 50%;
+  z-index: -10;
   transform: translateX(-50%) rotate(-8deg); /* 大きな文字が綺麗に見えるよう、傾きを少し緩やか（-8度）に */
 
   font-size: 45vw; /* ★ 30vw から 45vw に大幅アップ！ */
