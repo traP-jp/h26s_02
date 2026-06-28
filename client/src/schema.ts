@@ -52,6 +52,7 @@ const fetchApi = async (
 export type Reaction = {
   id: number // 暫定 5 以下
   count: number
+  myReaction: boolean
 }
 
 export type TagInfo = {
@@ -64,7 +65,7 @@ export type Post = {
   userName: string // traQ ID
   tags: string[]
   imageUrl: string
-  reactions: Reaction[]
+  reactions: Reaction[] | null
   createdAt: string // ISO 8601
 }
 
