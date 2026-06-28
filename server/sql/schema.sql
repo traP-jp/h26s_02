@@ -2,7 +2,8 @@
 CREATE TABLE posts (
     id UUID PRIMARY KEY,
     user_name VARCHAR(32) NOT NULL,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_posts_created_at_id (created_at, id)
 );
 
 -- post_tags テーブル
