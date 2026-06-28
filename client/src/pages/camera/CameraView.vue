@@ -4,7 +4,6 @@ import BottomNav from '@/components/BottomNav.vue'
 </script>
 
 <template>
-  aaaa
   <PhotoGraph />
   <BottomNav />
 </template>
