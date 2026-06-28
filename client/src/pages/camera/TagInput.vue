@@ -21,7 +21,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick } from 'vue'
+import { ref } from 'vue'
 
 const props = defineProps<{
   modelValue: string[]
