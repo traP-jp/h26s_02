@@ -13,6 +13,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v5"
+	"github.com/traP-jp/h26s_02/domain"
 	"github.com/traP-jp/h26s_02/repository"
 	"github.com/traP-jp/h26s_02/storage"
 
@@ -376,4 +377,97 @@ func (p *Post) GetPostsByUser(c *echo.Context) error {
 
 	return c.JSON(http.StatusOK, response)
 
+}
+
+func (p *Post) GetPostsByTags(c *echo.Context) error {
+	ctx := c.Request().Context()
+
+	tagNames := c.QueryParams()["tags"]
+	if len(tagNames) == 0 {
+		return echo.NewHTTPError(http.StatusBadRequest, "tags required")
+	}
+
+	posts, err := p.postRepository.GetPostsByTags(ctx, tagNames)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to fetch posts")
+	}
+	rawTags := c.QueryParams()["tags"]
+	if len(rawTags) == 0 {
+		return echo.NewHTTPError(http.StatusBadRequest, "tags required")
+	}
+
+	tagIDs := make([]uuid.UUID, len(rawTags))
+	for i, t := range rawTags {
+		id, err := uuid.Parse(t)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, "invalid uuid format")
+		}
+		tagIDs[i] = id
+	}
+
+	posts, err = p.postRepository.GetPostsByTags(ctx, tagNames)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to fetch posts")
+	}
+
+	res, err := p.toPostResponses(ctx, posts)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to build response")
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+func (p *Post) toPostResponses(ctx context.Context, posts []*domain.Post) ([]PostResponse, error) {
+	if len(posts) == 0 {
+		return []PostResponse{}, nil
+	}
+
+	postIDs := make([]uuid.UUID, len(posts))
+	for i, post := range posts {
+		postIDs[i] = post.GetID()
+	}
+
+	response := make([]PostResponse, 0, len(posts))
+	for _, post := range posts {
+		pid := post.GetID()
+
+		tags, err := p.tagRepository.GetPostTags(ctx, pid)
+		if err != nil {
+			return nil, err
+		}
+
+		allReactions, err := p.reactionRepository.GetReactionCount(ctx, pid)
+		if err != nil {
+			return nil, err
+		}
+
+		var reactionRes []ReactionResponse
+		for _, r := range allReactions {
+			if r.GetCount() > 0 {
+				reactionRes = append(reactionRes, ReactionResponse{
+					ID:    r.GetID(),
+					Count: r.GetCount(),
+				})
+			}
+		}
+
+		imageURL, err := p.imageStorage.GetTemporalyURL(ctx, pid.String())
+		if errors.Is(err, storage.ErrImageNotFound) {
+			return nil, echo.NewHTTPError(http.StatusNotFound, "image not found")
+		}
+		if err != nil {
+			return nil, echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
+		}
+
+		response = append(response, PostResponse{
+			ID:        pid,
+			UserName:  post.GetUserName(),
+			Tags:      tags,
+			ImageURL:  imageURL,
+			Reactions: reactionRes,
+			CreatedAt: post.GetCreatedAt(),
+		})
+	}
+
+	return response, nil
 }
