@@ -29,7 +29,7 @@ import MotionView from '@/pages/camera/MotionView.vue'
 import HashtagInput from '@/pages/camera/TagInput.vue'
 import { api } from '@/schema'
 
-const myTags = ref<string[]>(['#躍動'])
+const myTags = ref<string[]>(['躍動'])
 
 const router = useRouter()
 
