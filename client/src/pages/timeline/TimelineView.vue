@@ -20,7 +20,6 @@ onMounted(async () => {
 useInfiniteScroll(
   el,
   async () => {
-    console.log(posts.value.length)
     if (isLoadingTop.value) return
     isLoadingTop.value = true
     try {
@@ -42,17 +41,23 @@ useInfiniteScroll(
     } catch (error) {
       console.error('[Timeline] 最新の投稿の取得・マージエラー:', error)
     } finally {
-      isLoadingTop.value = false
+      // 10 秒まつ
+      setTimeout(() => {
+        isLoadingTop.value = false
+      }, 10000)
     }
   },
   { direction: 'top', distance: 100 }
 )
+
+const shouldFetchMore = ref(true) // 追加の投稿を取得するかどうかのフラグ
 
 // 下スクロール → 過去の投稿を取得
 useInfiniteScroll(
   el,
   async () => {
     if (isLoadingBottom.value) return
+    if (!shouldFetchMore.value) return // 追加の投稿がない場合は処理をスキップ
     isLoadingBottom.value = true
     try {
       const last = posts.value[posts.value.length - 1]
@@ -61,6 +66,8 @@ useInfiniteScroll(
         if (prevPosts.length > 0) {
           posts.value.push(...prevPosts)
           await nextTick()
+        } else {
+          shouldFetchMore.value = false // 追加の投稿がない場合はフラグを false にする
         }
       }
     } catch (error) {
