@@ -4,12 +4,29 @@ import UserIcon from '@/components/UserIcon.vue'
 import TimelineReaction from '@/pages/timeline/TimelineReaction.vue'
 import { type Post } from '@/schema'
 import { useRouter } from 'vue-router'
+import { computed } from 'vue'
 
 const router = useRouter()
 
-defineProps<{
+const props = defineProps<{
   post: Post
 }>()
+
+const reactions = computed(() => {
+  if (!props.post.reactions) return { 1: { count: 0 }, 2: { count: 0 }, 3: { count: 0 } }
+
+  const r1 = props.post.reactions.find((r) => r.id === 1)
+  const r2 = props.post.reactions.find((r) => r.id === 2)
+  const r3 = props.post.reactions.find((r) => r.id === 3)
+
+  const result = {
+    1: { count: r1 ? r1.count : 0 },
+    2: { count: r2 ? r2.count : 0 },
+    3: { count: r3 ? r3.count : 0 },
+  }
+
+  return result
+})
 </script>
 
 <template>
@@ -24,10 +41,10 @@ defineProps<{
     </div>
     <div class="tl-item-reactions">
       <TimelineReaction
-        v-for="reaction in post.reactions"
-        :id="reaction.id"
-        :key="reaction.id"
-        :count="reaction.count"
+        v-for="id in [1, 2, 3]"
+        :id="id"
+        :key="id"
+        :count="reactions[id].count"
         :is-active="true"
       />
     </div>

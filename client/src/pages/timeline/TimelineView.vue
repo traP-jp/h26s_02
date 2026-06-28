@@ -2,7 +2,7 @@
 import { ref, nextTick, onMounted } from 'vue'
 import { useInfiniteScroll } from '@vueuse/core'
 import BottomNav from '@/components/BottomNav.vue'
-import TimelineItem from './TimelineItem.vue'
+import TimelineItem from '@/pages/timeline/TimelineItem.vue'
 
 import { api, type Post } from '@/schema'
 
@@ -20,6 +20,7 @@ onMounted(async () => {
 useInfiniteScroll(
   el,
   async () => {
+    console.log(posts.value.length)
     if (isLoadingTop.value) return
     isLoadingTop.value = true
     try {
