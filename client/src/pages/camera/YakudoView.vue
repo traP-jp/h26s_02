@@ -14,6 +14,8 @@
       @update-rotation-rate="onUpdateRotationRate"
     />
 
+    <HashtagInput v-model="myTags" />
+
     <div class="action-area">
       <button class="dummy-post-btn" @click="handlePost">投稿する</button>
     </div>
@@ -24,7 +26,10 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import MotionView from '@/pages/camera/MotionView.vue'
+import HashtagInput from '@/pages/camera/TagInput.vue'
 import { api } from '@/schema'
+
+const myTags = ref<string[]>(['#躍動'])
 
 const router = useRouter()
 
@@ -138,9 +143,8 @@ const handlePost = async () => {
   if (!blob) throw new Error('Canvas から Blob の生成に失敗しました。')
 
   const imageFile = new File([blob], 'image.png', { type: 'image/png' })
-  const tags = ['sample', `tag`]
 
-  await api.newPost({ image: imageFile, tags: tags })
+  await api.newPost({ image: imageFile, tags: myTags.value })
   await router.push('/')
 }
 </script>
