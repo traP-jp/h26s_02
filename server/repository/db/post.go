@@ -82,3 +82,17 @@ func (p *Post) GetPost(ctx context.Context, id uuid.UUID) (*domain.Post, error) 
 
 	return domain.NewPost(post.ID, post.UserName, post.CreatedAt), nil
 }
+
+func (p *Post) GetPostsByUser(ctx context.Context, userName string) ([]*domain.Post, error) {
+	var records []posts
+	if err := p.db.DB(ctx).SelectContext(ctx, &records, "SELECT id, user_name, created_at FROM posts WHERE user_name = ? ORDER BY created_at DESC", userName); err != nil {
+		return nil, fmt.Errorf("get posts by user: %w", err)
+	}
+
+	posts := make([]*domain.Post, 0, len(records))
+	for _, rec := range records {
+		posts = append(posts, domain.NewPost(rec.ID, rec.UserName, rec.CreatedAt))
+	}
+
+	return posts, nil
+}
