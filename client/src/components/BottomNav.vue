@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import MSIcon from '@/components/MSIcon.vue'
 import SearchInput from '@/components/SearchInput.vue'
 const isSearching = ref(false)
