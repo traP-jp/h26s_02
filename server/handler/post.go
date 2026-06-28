@@ -163,7 +163,6 @@ func (p *Post) PostPost(c *echo.Context) error {
 
 		return nil
 	})
-
 	if err != nil {
 		return err
 	}
@@ -195,4 +194,102 @@ func (p *Post) DeleteReaction(c *echo.Context) error {
 		return echo.NewHTTPError(http.StatusNotFound, "reaction not found")
 	}
 	return c.NoContent(http.StatusOK)
+}
+
+type GetPostsRequest struct {
+	Before uuid.UUID `query:"before"`
+	Limit  int       `query:"limit"`
+}
+
+type ReactionResponse struct {
+	ID    int `json:"id"`
+	Count int `json:"count"`
+}
+
+type PostResponse struct {
+	ID        uuid.UUID          `json:"id"`
+	UserName  string             `json:"userName"`
+	Tags      []string           `json:"tags"`
+	ImageURL  string             `json:"imageUrl"`
+	Reactions []ReactionResponse `json:"reactions"`
+	CreatedAt time.Time          `json:"createdAt"`
+}
+
+func (p *Post) GetPosts(c *echo.Context) error {
+	ctx := c.Request().Context()
+
+	req := GetPostsRequest{Limit: 30}
+	if err := c.Bind(&req); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid query parameters")
+	}
+
+	var referenceTime time.Time
+	if req.Before != uuid.Nil {
+		post, err := p.postRepository.GetPostByID(ctx, req.Before)
+		if err != nil {
+			if errors.Is(err, repository.ErrRecordNotFound) {
+				return echo.NewHTTPError(http.StatusNotFound, "post not found")
+			}
+			return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
+		}
+		referenceTime = post.GetCreatedAt()
+	} else {
+		referenceTime = time.Now()
+	}
+
+	posts, err := p.postRepository.GetPosts(ctx, referenceTime, req.Limit)
+	if err != nil {
+		log.Printf("failed to get posts: %v\n", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
+	}
+
+	if len(posts) == 0 {
+		return c.JSON(http.StatusOK, []PostResponse{})
+	}
+
+	postIDs := make([]uuid.UUID, len(posts))
+	for i, post := range posts {
+		postIDs[i] = post.GetID()
+	}
+
+	allTags, err := p.tagRepository.GetTagsByPostIDs(ctx, postIDs)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get tags")
+	}
+	allReactions, err := p.reactionRepository.GetReactionsByPostIDs(ctx, postIDs)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to get reactions")
+	}
+
+	response := make([]PostResponse, 0, len(posts))
+	for _, post := range posts {
+		postID := post.GetID()
+
+		var tagNames []string
+		for _, t := range allTags[postID] {
+			tagNames = append(tagNames, t.GetName())
+		}
+
+		var reactionRes []ReactionResponse
+		for _, r := range allReactions[postID] {
+			if r.GetCount() > 0 {
+				reactionRes = append(reactionRes, ReactionResponse{
+					ID:    r.GetID(),
+					Count: r.GetCount(),
+				})
+			}
+		}
+
+		response = append(response, PostResponse{
+			ID:        postID,
+			UserName:  post.GetUserName(),
+			Tags:      tagNames,
+			ImageURL:  "",
+			Reactions: reactionRes,
+			CreatedAt: post.GetCreatedAt(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, response)
+
 }
