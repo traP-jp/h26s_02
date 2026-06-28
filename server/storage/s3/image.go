@@ -19,8 +19,6 @@ import (
 
 const defaultPresignExpiration = 15 * time.Minute
 
-var ErrImageNotFound = errors.New("image not found")
-
 var _ storage.Image = (*Image)(nil)
 
 type Image struct {

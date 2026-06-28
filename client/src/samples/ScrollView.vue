@@ -102,6 +102,7 @@ const loadMoreBottom = (): void => {
 </script>
 
 <template>
+  
   <div
     style="
       height: 100vh;

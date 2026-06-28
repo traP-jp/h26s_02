@@ -13,4 +13,6 @@ type Reaction interface {
 	CreateReaction(ctx context.Context, postID uuid.UUID, reactionID int, userName string) error
 	GetReactionCount(ctx context.Context, postID uuid.UUID) ([]*domain.ReactionCount, error)
 	DeleteReaction(ctx context.Context, postID uuid.UUID, userName string, reactionID int) error
+	// post id の配列に紐づけられた reaction を取得する。
+	GetReactionsByPostIDs(ctx context.Context, postIDs []uuid.UUID) (map[uuid.UUID][]*domain.ReactionCount, error)
 }

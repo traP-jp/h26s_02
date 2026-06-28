@@ -12,6 +12,7 @@ type Tag interface {
 
 	// タグ一覧の取得
 	GetTags(ctx context.Context) ([]TagCount, error)
+	GetTagsByPostIDs(ctx context.Context, postIDs []uuid.UUID) (map[uuid.UUID][]domain.Tag, error)
 	GetPostTags(ctx context.Context, postID uuid.UUID) ([]string, error)
 }
 
