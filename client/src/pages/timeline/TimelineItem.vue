@@ -13,16 +13,21 @@ const props = defineProps<{
 }>()
 
 const reactions = computed(() => {
-  if (!props.post.reactions) return { 1: { count: 0 }, 2: { count: 0 }, 3: { count: 0 } }
+  if (!props.post.reactions)
+    return {
+      1: { id: 1, count: 0, myReaction: false },
+      2: { id: 2, count: 0, myReaction: false },
+      3: { id: 3, count: 0, myReaction: false },
+    }
 
   const r1 = props.post.reactions.find((r) => r.id === 1)
   const r2 = props.post.reactions.find((r) => r.id === 2)
   const r3 = props.post.reactions.find((r) => r.id === 3)
 
   const result = {
-    1: { count: r1 ? r1.count : 0 },
-    2: { count: r2 ? r2.count : 0 },
-    3: { count: r3 ? r3.count : 0 },
+    1: { id: 1, count: r1 ? r1.count : 0, myReaction: false },
+    2: { id: 2, count: r2 ? r2.count : 0, myReaction: false },
+    3: { id: 3, count: r3 ? r3.count : 0, myReaction: false },
   }
 
   return result
@@ -46,6 +51,7 @@ const reactions = computed(() => {
         :key="id"
         :post-id="post.id"
         :count="reactions[id].count"
+        :my-reaction="reactions[id].myReaction"
         :is-active="true"
       />
     </div>
