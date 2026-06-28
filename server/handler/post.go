@@ -55,13 +55,18 @@ func (p *Post) GetPost(c *echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid post ID")
 	}
-	post, err := p.postRepository.GetPost(c.Request().Context(), postID)
+	post, err := p.postRepository.GetPostByID(c.Request().Context(), postID)
+	if errors.Is(err, repository.ErrRecordNotFound) {
+		return echo.NewHTTPError(http.StatusNotFound, "post not found")
+	}
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid post ID")
+		log.Printf("failed to get post: %v\n", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
 	}
 	reactions, err := p.reactionRepository.GetReactionCount(c.Request().Context(), postID)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid post ID")
+		log.Printf("failed to get reaction count: %v\n", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
 	}
 
 	userName, err := GetUserName(c)
@@ -89,7 +94,8 @@ func (p *Post) GetPost(c *echo.Context) error {
 	}
 	tags, err := p.tagRepository.GetPostTags(c.Request().Context(), postID)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid post ID")
+		log.Printf("failed to get tags: %v\n", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
 	}
 
 	imageURL, err := p.imageStorage.GetTemporalyURL(c.Request().Context(), postID.String())
