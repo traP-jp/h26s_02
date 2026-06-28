@@ -149,7 +149,7 @@ onBeforeUnmount(stopCamera)
 <template>
   <div class="camera-layout-wrapper">
     <div>
-      <RouterLink to="/timeline" class="back-button"> ← </RouterLink>
+      <RouterLink to="/" class="back-button"> ← </RouterLink>
     </div>
 
     <button
