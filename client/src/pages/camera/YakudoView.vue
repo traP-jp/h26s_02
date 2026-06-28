@@ -57,20 +57,6 @@ const onAccelerationUpdate = (accelX: number, accelY: number) => {
 
 let sourceImage: HTMLImageElement | null = null
 
-const handleImageUpload = (event: Event) => {
-  const target = event.target as HTMLInputElement
-  const file = target.files?.[0]
-
-  if (!file) return
-
-  const reader = new FileReader()
-  reader.onload = (e) => {
-    if (e.target?.result && typeof e.target.result === 'string') {
-      loadImageFromDataUrl(e.target.result)
-    }
-  }
-  reader.readAsDataURL(file)
-}
 const drawCanvas = () => {
   const canvas = canvasRef.value
   if (!canvas || !sourceImage) return
