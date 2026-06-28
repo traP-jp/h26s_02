@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jmoiron/sqlx"
 	"github.com/traP-jp/h26s_02/domain"
 	"github.com/traP-jp/h26s_02/repository"
 )
@@ -83,4 +84,36 @@ func (p *Post) GetPostsByUser(ctx context.Context, userName string) ([]*domain.P
 	}
 
 	return posts, nil
+}
+
+func (p *Post) GetPostsByTags(ctx context.Context, tagNames []string) ([]*domain.Post, error) {
+	if len(tagNames) == 0 {
+		return []*domain.Post{}, nil
+	}
+
+	query := `
+    SELECT p.id, p.user_name, p.created_at
+    FROM posts p
+    JOIN post_tags t ON p.id = t.post_id
+    WHERE t.name IN (?)
+    GROUP BY p.id
+    HAVING COUNT(DISTINCT t.name) = ?
+		ORDER BY p.created_at DESC`
+
+	query, args, err := sqlx.In(query, tagNames, len(tagNames))
+	if err != nil {
+		return nil, fmt.Errorf("build query: %w", err)
+	}
+
+	var posts []*posts
+	if err := p.db.DB(ctx).SelectContext(ctx, &posts, query, args...); err != nil {
+		return nil, fmt.Errorf("select posts: %w", err)
+	}
+
+	result := make([]*domain.Post, 0, len(posts))
+	for _, rec := range posts {
+		result = append(result, domain.NewPost(rec.ID, rec.UserName, rec.CreatedAt))
+	}
+
+	return result, nil
 }

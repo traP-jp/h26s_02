@@ -1,75 +1,85 @@
 <script setup lang="ts">
-import { ref, nextTick } from 'vue'
+import { ref, nextTick, onMounted } from 'vue'
 import { useInfiniteScroll } from '@vueuse/core'
 import PostImage from '@/components/PostImage.vue'
+import { type Post } from '@/schema'
 
-interface Post {
-  id: number
-}
+// 親から関数をPropsとして受け取ります
+const props = defineProps<{
+  loadNew: (existingIds: Set<string>) => Promise<Post[]>
+  loadOld: (lastId?: string) => Promise<Post[]>
+}>()
 
 const el = ref<HTMLElement | null>(null)
-
-const items = ref<Post[]>([{ id: 101 }, { id: 102 }, { id: 103 }, { id: 104 }, { id: 105 }])
+const posts = ref<Post[]>([])
 
 const isLoadingTop = ref<boolean>(false)
 const isLoadingBottom = ref<boolean>(false)
 
+// 初回マウント時にデータを取得
+onMounted(async () => {
+  isLoadingBottom.value = true
+  try {
+    const initialPosts = await props.loadOld()
+    posts.value = initialPosts
+  } catch (error) {
+    console.error('[PostGrid] 初回データ読み込みエラー:', error)
+  } finally {
+    isLoadingBottom.value = false
+  }
+})
+
+// 上スクロール → 最新の投稿を取得してマージ
 useInfiniteScroll(
   el,
-  () => {
+  async () => {
     if (isLoadingTop.value) return
     isLoadingTop.value = true
 
-    // 読み込みに 1 秒かかる想定
-    setTimeout(async () => {
+    try {
       const previousScrollHeight = el.value?.scrollHeight ?? 0
+      const existingIds = new Set(posts.value.map((item) => item.id))
 
-      const first = items.value[0]
-      if (first) {
-        const prev: Post[] = [
-          { id: first.id - 5 },
-          { id: first.id - 4 },
-          { id: first.id - 3 },
-          { id: first.id - 2 },
-          { id: first.id - 1 },
-        ]
-        items.value.unshift(...prev)
-      }
+      const newPosts = await props.loadNew(existingIds)
+      if (newPosts.length > 0) {
+        posts.value.unshift(...newPosts) // 先頭に新着投稿を追加
 
-      // スクロール位置を修正
-      await nextTick()
-      if (el.value) {
-        const currentScrollHeight = el.value.scrollHeight
-        el.value.scrollTop += currentScrollHeight - previousScrollHeight
+        // スクロール位置を補正
+        await nextTick()
+        if (el.value) {
+          const currentScrollHeight = el.value.scrollHeight
+          el.value.scrollTop += currentScrollHeight - previousScrollHeight
+        }
       }
+    } catch (error) {
+      console.error('[PostGrid] 最新の投稿の取得・マージエラー:', error)
+    } finally {
       isLoadingTop.value = false
-    }, 1000)
+    }
   },
   { direction: 'top', distance: 100 }
 )
 
+// 下スクロール → 過去の投稿を取得
 useInfiniteScroll(
   el,
-  () => {
-    if (isLoadingBottom.value) return
+  async () => {
+    // まだ1件も読み込まれていない場合はスキップ
+    if (isLoadingBottom.value || posts.value.length === 0) return
     isLoadingBottom.value = true
-
-    // 読み込みに 1 秒かかる想定
-    setTimeout(async () => {
-      const last = items.value[items.value.length - 1]
-      if (last) {
-        const next: Post[] = [
-          { id: last.id + 1 },
-          { id: last.id + 2 },
-          { id: last.id + 3 },
-          { id: last.id + 4 },
-          { id: last.id + 5 },
-        ]
-        items.value.push(...next)
+    try {
+      const last = posts.value[posts.value.length - 1]
+      if (!last) return
+      const prevPosts = await props.loadOld(last.id)
+      if (prevPosts.length > 0) {
+        posts.value.push(...prevPosts)
+        await nextTick()
       }
-      await nextTick()
+    } catch (error) {
+      console.error('[PostGrid] 過去の投稿の取得エラー:', error)
+    } finally {
       isLoadingBottom.value = false
-    }, 1000)
+    }
   },
   { direction: 'bottom', distance: 100 }
 )
@@ -77,7 +87,7 @@ useInfiniteScroll(
 
 <template>
   <div ref="el" class="grid">
-    <PostImage v-for="item in items" :key="item.id" :num="item.id" />
+    <PostImage v-for="post in posts" :key="post.id" :post="post" />
   </div>
 </template>
 

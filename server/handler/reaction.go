@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"slices"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v5"
@@ -34,7 +35,7 @@ func (p *Post) PostReaction(c *echo.Context) error {
 		return err
 	}
 
-	var reactionCountResponses []reactionCountResponse
+	reactionCountResponses := make([]ReactionResponse, 0)
 	err = p.db.Transaction(c.Request().Context(), func(ctx context.Context) error {
 		_, err := p.postRepository.GetPostByID(ctx, postID)
 		if errors.Is(err, repository.ErrRecordNotFound) {
@@ -62,11 +63,23 @@ func (p *Post) PostReaction(c *echo.Context) error {
 			return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
 		}
 
-		reactionCountResponses = make([]reactionCountResponse, 0, len(reactions))
+		userReactions, err := p.reactionRepository.GetUserReactionsByPostIDs(ctx, userName, []uuid.UUID{postID})
+		if err != nil {
+			log.Printf("failed to get user reactions: %v\n", err)
+			return echo.NewHTTPError(http.StatusInternalServerError, "internal server error")
+		}
+		postUserReactions, ok := userReactions[postID]
+		if !ok {
+			postUserReactions = []int{}
+		}
+
+		reactionCountResponses = make([]ReactionResponse, 0, len(reactions))
 		for _, reaction := range reactions {
-			reactionCountResponses = append(reactionCountResponses, reactionCountResponse{
-				ID:    reaction.GetID(),
-				Count: reaction.GetCount(),
+			myReaction := slices.Contains(postUserReactions, reaction.GetID())
+			reactionCountResponses = append(reactionCountResponses, ReactionResponse{
+				ID:         reaction.GetID(),
+				Count:      reaction.GetCount(),
+				MyReaction: myReaction,
 			})
 		}
 

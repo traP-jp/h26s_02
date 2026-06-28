@@ -2,9 +2,10 @@
 import PostImage from '@/components/PostImage.vue'
 import UserIcon from '@/components/UserIcon.vue'
 import TimelineReaction from '@/pages/timeline/TimelineReaction.vue'
+import { type Post } from '@/schema'
 
 defineProps<{
-  num: number
+  post: Post
 }>()
 </script>
 
@@ -14,13 +15,18 @@ defineProps<{
       <UserIcon user-id="kitsne" :size="32" />
       <div class="tl-item-userid">kitsne</div>
     </div>
-    <PostImage :num="num" />
+    <PostImage :post="post" />
     <div class="tl-item-hash">
-      <span>#四川</span>
-      <span>#油淋鶏</span>
+      <span v-for="tag in post.tags" :key="tag">#{{ tag }}</span>
     </div>
     <div class="tl-item-reactions">
-      <TimelineReaction v-for="id in 3" :id="id" :key="id" :count="id * 10" :is-active="true" />
+      <TimelineReaction
+        v-for="reaction in post.reactions"
+        :id="reaction.id"
+        :key="reaction.id"
+        :count="reaction.count"
+        :is-active="true"
+      />
     </div>
   </div>
 </template>

@@ -100,8 +100,11 @@ const captureAndNavigate = async () => {
 
   try {
     const canvas = document.createElement('canvas')
-    canvas.width = video.videoWidth
-    canvas.height = video.videoHeight
+
+    // 1. ビデオの横幅と縦幅のうち、小さい方を基準（一辺の長さ）にする
+    const size = Math.min(video.videoWidth, video.videoHeight)
+    canvas.width = size
+    canvas.height = size
 
     const ctx = canvas.getContext('2d')
     if (!ctx) {
@@ -109,12 +112,27 @@ const captureAndNavigate = async () => {
       return
     }
 
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+    // 2. 中央を基準に正方形に切り取るための開始位置（オフセット）を計算
+    const sx = (video.videoWidth - size) / 2
+    const sy = (video.videoHeight - size) / 2
+
+    // 3. 映像の中央部分を正方形としてCanvasに描画
+    ctx.drawImage(
+      video,
+      sx,
+      sy,
+      size,
+      size, // 元ビデオの切り出し位置とサイズ
+      0,
+      0,
+      canvas.width,
+      canvas.height // Canvas上の描画位置とサイズ
+    )
 
     const dataUrl = canvas.toDataURL('image/png')
 
     await router.push({
-      path: '/samples/yakudo',
+      path: '/camera/yakudo',
       state: { capturedImage: dataUrl },
     })
 
