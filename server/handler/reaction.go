@@ -36,7 +36,7 @@ func (p *Post) PostReaction(c *echo.Context) error {
 
 	var reactionCountResponses []reactionCountResponse
 	err = p.db.Transaction(c.Request().Context(), func(ctx context.Context) error {
-		_, err := p.postRepository.GetPost(ctx, postID)
+		_, err := p.postRepository.GetPostByID(ctx, postID)
 		if errors.Is(err, repository.ErrRecordNotFound) {
 			return echo.NewHTTPError(http.StatusNotFound, "post not found")
 		}
