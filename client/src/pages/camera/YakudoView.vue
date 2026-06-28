@@ -38,17 +38,20 @@ const resetBlur = () => {
   drawCanvas()
 }
 
+// ここに「最大値」を保持します
 const currentRotationRate = ref(0)
 
+// ★変更：子コンポーネントから値が送られてくるたびにチェック
 const onUpdateRotationRate = (rate: number) => {
-  // ここで受け取った回転加速度を保持し、drawCanvas() 内で利用します
-  currentRotationRate.value = rate
-  // もしアニメーションループ(requestAnimationFrame)を使っていない場合は、ここで drawCanvas() を呼ぶ
-  drawCanvas()
+  // 送られてきた値が、これまでの最大値よりも大きければ更新
+  if (rate > currentRotationRate.value) {
+    currentRotationRate.value = rate
+    // 最大値が更新されたときだけキャンバスを再描画する
+    drawCanvas()
+  }
 }
 
 const MAX_BLUR_TIME = 1000
-
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 const imageLoaded = ref<boolean>(false)
 
@@ -59,10 +62,8 @@ const blurTime = ref<number>(0)
 const onAccelerationUpdate = (accelX: number, accelY: number) => {
   const biasX = -accelX / 10
   const biasY = accelY / 10
-
   centerX.value = Math.max(0, Math.min(1, 0.5 + biasX))
   centerY.value = Math.max(0, Math.min(1, 0.5 + biasY))
-
   drawCanvas()
 }
 
@@ -79,20 +80,12 @@ const drawCanvas = () => {
   canvas.height = sourceImage.height
 
   ctx.clearRect(0, 0, canvas.width, canvas.height)
-  ctx.fillStyle = '#000000'
-  ctx.fillRect(0, 0, canvas.width, canvas.height)
-
-  ctx.globalCompositeOperation = 'source-over'
-  ctx.globalAlpha = 1.0
   ctx.drawImage(sourceImage, 0, 0)
 
-  // 従来の拡大ブラーの強さ（ブレの広がり度合い）
   const strength = Math.min(blurTime.value / MAX_BLUR_TIME / 2, 3)
 
-  // ★変更：デバイスの回転速度（currentRotationRate）を回転角度に変換
-  // rotationRate は激しく動かすと数百（度/秒）になるため、適切な係数（例: 0.005）を掛けます。
-  // 好みに応じて 0.005 を調整して、回転の敏感さを変えてください。
-  const maxRotation = Math.min(currentRotationRate.value * 1, 3)
+  // ★ 常にその時点での「最大値」が適用されます
+  const maxRotation = Math.min(currentRotationRate.value * 0.005, 1)
 
   const passes = 60
   const originX: number = canvas.width * centerX.value
@@ -103,29 +96,22 @@ const drawCanvas = () => {
   for (let i = 0; i < passes; i++) {
     const ratio = i / passes
     const scale = 1 + strength * ratio
-
-    // ★ maxRotation が回転の強さにダイレクトに連動するようになりました！
-    // 拡大ブラーの進捗（ratio）の2乗を掛けることで綺麗にブレさせます
-    const angle = maxRotation * (ratio * ratio)
+    const angle = maxRotation * (ratio * ratio) * 0.2
 
     ctx.save()
     ctx.translate(originX, originY)
-
-    // 回転 ➔ 拡大
     ctx.rotate(angle)
     ctx.scale(scale, scale)
-
     ctx.translate(-originX, -originY)
     ctx.drawImage(sourceImage, 0, 0, canvas.width, canvas.height)
     ctx.restore()
   }
-
   ctx.globalAlpha = 1.0
 }
 
 onMounted(() => {
+  // ここでの sessionStorage の読み込みは不要になったので削除しました
   const state = history.state as { capturedImage?: string }
-
   if (state && state.capturedImage) {
     loadImageFromDataUrl(state.capturedImage)
   } else {
@@ -151,7 +137,6 @@ const handlePost = async () => {
   })
   if (!blob) throw new Error('Canvas から Blob の生成に失敗しました。')
 
-  // 取得したBlobからFileを作成し、APIに送信します
   const imageFile = new File([blob], 'image.png', { type: 'image/png' })
   const tags = ['sample', `tag`]
 

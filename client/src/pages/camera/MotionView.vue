@@ -4,7 +4,7 @@
       <p>センサーを準備しています...</p>
     </div>
     <div v-else class="ready-screen">
-      <p>スマホを振ってください！</p>
+      <p>端末を躍動させろ！</p>
     </div>
   </div>
 </template>
@@ -12,16 +12,20 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 
-// ★変更：update-rotation-rate を emit できるように定義を追加
 const emit = defineEmits<{
   'update-blur-time': [blurTime: number]
   'update-acceleration': [accelX: number, accelY: number]
   'update-rotation-rate': [rate: number]
+  // ★最大値が更新されたことを親に通知したい場合のためのemit（任意）
+  'update-max-rotation-rate': [maxRate: number]
 }>()
 
 const isPermissionGranted = ref(false)
 const isShaking = ref(false)
 const debugLogs = ref<string[]>([])
+
+// ★追加：回転速度の最大値を保持するリファレンス
+const maxRotationRate = ref(0)
 
 const addLog = (message: string) => {
   debugLogs.value.push(message)
@@ -46,19 +50,28 @@ const handleMotion = (event: DeviceMotionEvent) => {
 
   emit('update-acceleration', current.x, current.y)
 
-  // ★追加：回転速度（ジャイロ）の処理
-  // rotationRate.alpha(Z軸), beta(X軸), gamma(Y軸) から、スマホのひねり速度を計算します
+  // 2. 回転速度（ジャイロ）の処理
   const rotation = event.rotationRate
   if (rotation && rotation.alpha !== null && rotation.beta !== null && rotation.gamma !== null) {
-    // 3軸の回転速度の絶対値を合成して「回転全体の激しさ」を算出（単位: 度/秒）
     const rotationSpeed =
       Math.abs(rotation.alpha) + Math.abs(rotation.beta) + Math.abs(rotation.gamma)
 
-    // 親コンポーネントへ通知
+    // リアルタイムの速度を通知
     emit('update-rotation-rate', rotationSpeed)
+
+    // ★追加：これまでの最大値を超えていたら更新して保存
+    if (rotationSpeed > maxRotationRate.value) {
+      maxRotationRate.value = rotationSpeed
+
+      // sessionStorage に 'max_rotation_rate' という名前で保存（文字列にする必要あり）
+      sessionStorage.setItem('max_rotation_rate', rotationSpeed.toString())
+
+      // 必要であれば親コンポーネントにも最大値を通知
+      emit('update-max-rotation-rate', rotationSpeed)
+    }
   }
 
-  // 2. 従来のシェイク・ブラー時間の計算
+  // 3. 従来のシェイク・ブラー時間の計算
   const currentTime = Date.now()
   if (currentTime - lastUpdate > 100) {
     const diffTime = currentTime - lastUpdate
@@ -107,8 +120,17 @@ const playSound = () => {
 }
 
 onMounted(() => {
+  // ページ読み込み時に、前回のセッションデータが残っていれば一応リセット
+  sessionStorage.removeItem('max_rotation_rate')
+
   addLog('[Auto] ページが読み込まれたため、自動でセンサーを要求します')
   void requestAccess()
+})
+
+onUnmounted(() => {
+  if (isPermissionGranted.value) {
+    window.removeEventListener('devicemotion', handleMotion, false)
+  }
 })
 
 const requestAccess = async () => {
@@ -139,12 +161,6 @@ const requestAccess = async () => {
     console.error(error)
   }
 }
-
-onUnmounted(() => {
-  if (isPermissionGranted.value) {
-    window.removeEventListener('devicemotion', handleMotion, false)
-  }
-})
 </script>
 
 <style scoped>
