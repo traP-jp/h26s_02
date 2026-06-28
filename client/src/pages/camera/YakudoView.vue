@@ -84,7 +84,7 @@ const drawCanvas = () => {
   const strength = Math.min(blurTime.value / MAX_BLUR_TIME / 2, 3)
 
   // ★ 常にその時点での「最大値」が適用されます
-  const maxRotation = Math.min(currentRotationRate.value * 0.005, 1)
+  const maxRotation = Math.min(currentRotationRate.value * 0.0002, 0.4)
 
   const passes = 60
   const originX: number = canvas.width * centerX.value
