@@ -62,6 +62,9 @@ func (p *Post) GetPosts(ctx context.Context, referenceTime time.Time, limit int)
 func (p *Post) GetPostByID(ctx context.Context, id uuid.UUID) (*domain.Post, error) {
 	var rec posts
 	if err := p.db.DB(ctx).GetContext(ctx, &rec, "SELECT id, user_name, created_at FROM posts WHERE id = ?", id); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, repository.ErrRecordNotFound
+		}
 		return nil, fmt.Errorf("get post by id: %w", err)
 	}
 
